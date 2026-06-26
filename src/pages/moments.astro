@@ -1,0 +1,149 @@
+---
+import { Icon } from "astro-icon/components";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getSortedMomentsList } from "@/utils/content-utils";
+import { url } from "@/utils/url-utils";
+
+const moments = await getSortedMomentsList();
+const commentPageUrl = "/guestbook/";
+
+const moodConfig = {
+  happy: {
+    label: "开心",
+    icon: "material-symbols:mood",
+    badge: "bg-amber-500/10 text-amber-600 dark:text-amber-300",
+    dot: "border-amber-400",
+  },
+  coding: {
+    label: "写代码",
+    icon: "material-symbols:code",
+    badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300",
+    dot: "border-emerald-400",
+  },
+  gaming: {
+    label: "打游戏",
+    icon: "material-symbols:sports-esports",
+    badge: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-300",
+    dot: "border-fuchsia-400",
+  },
+  "late-night": {
+    label: "深夜模式",
+    icon: "material-symbols:nights-stay",
+    badge: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300",
+    dot: "border-indigo-400",
+  },
+  thinking: {
+    label: "思考中",
+    icon: "material-symbols:psychology",
+    badge: "bg-sky-500/10 text-sky-600 dark:text-sky-300",
+    dot: "border-sky-400",
+  },
+};
+---
+
+<MainGridLayout title="碎碎念" description="记录日常、灵感和游戏时刻的小动态。">
+  <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-6 md:px-9 py-6 relative w-full">
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="h-8 w-8 rounded-lg bg-(--primary) flex items-center justify-center text-white dark:text-black/70">
+            <Icon is:inline name="material-symbols:tips-and-updates" class="text-[1.5rem]"></Icon>
+          </div>
+          <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+            碎碎念
+          </div>
+        </div>
+        <p class="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          这里记录一些日常心情、AI 折腾、游戏时刻和灵感碎片。
+        </p>
+      </div>
+
+      {moments.length > 0 ? (
+        <div class="relative">
+          <div class="absolute left-[15px] top-0 bottom-0 w-px bg-(--primary)/15"></div>
+
+          <div class="space-y-6">
+            {moments.map((moment) => {
+              const mood = moodConfig[moment.data.mood || "thinking"];
+              return (
+                <div class="relative pl-11">
+                  <div class:list={["absolute left-[9px] top-1.5 size-3.5 rounded-full border-2 bg-(--page-bg)", mood.dot]}></div>
+
+                  <div class="flex items-center gap-2.5 mb-3 flex-wrap">
+                    <div class="text-xs font-medium tracking-wide text-(--primary)/70 uppercase">
+                      {moment.data.published.toLocaleDateString("zh-CN", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </div>
+                    <div class="text-xs text-neutral-400 dark:text-neutral-500">
+                      {moment.data.published.toLocaleDateString("zh-CN", {
+                        weekday: "short",
+                      })}
+                    </div>
+                    <span class:list={["inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium", mood.badge]}>
+                      <Icon is:inline name={mood.icon} class="text-[13px]" />
+                      {mood.label}
+                    </span>
+                    {moment.data.title && (
+                      <div class="text-sm font-semibold text-neutral-700 dark:text-neutral-200 ml-0.5">
+                        {moment.data.title}
+                      </div>
+                    )}
+                  </div>
+
+                  <div class="rounded-2xl border border-black/5 bg-white/65 p-4 shadow-xs dark:border-white/10 dark:bg-white/6">
+                    {moment.body && (
+                      <div class="prose prose-neutral dark:prose-invert max-w-none text-sm leading-7 whitespace-pre-wrap">
+                        {moment.body}
+                      </div>
+                    )}
+
+                    {moment.data.images && moment.data.images.length > 0 && (
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 moment-images">
+                        {moment.data.images.map((image) => (
+                          <a href={url(image)} data-fancybox="gallery-moments" data-caption={moment.data.title || "动态配图"} class="overflow-hidden rounded-xl border border-black/5 dark:border-white/10">
+                            <img src={url(image)} alt={moment.data.title || "动态配图"} class="w-full h-auto object-cover transition-transform duration-300 hover:scale-[1.02]" loading="lazy" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {moment.data.tags && moment.data.tags.length > 0 && (
+                      <div class="flex flex-wrap gap-2 mt-4">
+                        {moment.data.tags.map((tag) => (
+                          <span class="rounded-full bg-(--primary)/10 px-3 py-1 text-[11px] font-medium text-(--primary)">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div class="flex items-center gap-4 mt-4 pt-3 border-t border-black/5 dark:border-white/10">
+                      <a
+                        href={commentPageUrl}
+                        class="btn-plain inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-neutral-500 no-underline transition-colors hover:text-(--primary) dark:text-neutral-400 dark:hover:text-(--primary)"
+                        title="去留言板参与讨论"
+                      >
+                        <Icon is:inline name="fa7-solid:comment-dots" class="text-[13px]" />
+                        <span>聊聊</span>
+                      </a>
+                      <span class="text-[11px] text-neutral-400 dark:text-neutral-500">
+                        去留言板分享你的想法或者点个赞
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div class="text-center py-16 text-neutral-500 dark:text-neutral-500">
+          <p class="text-base mb-2">这里暂时还没有动态。</p>
+          <p class="text-sm">等我有了新的心情和灵感，会第一时间记录在这里。</p>
+        </div>
+      )}
+    </div>
+  </div>
+</MainGridLayout>

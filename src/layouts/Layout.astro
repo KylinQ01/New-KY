@@ -1,0 +1,369 @@
+---
+import GoogleAnalytics from "@components/analytics/GoogleAnalytics.astro";
+import La51Analytics from "@components/analytics/La51Analytics.astro";
+import MicrosoftClarity from "@components/analytics/MicrosoftClarity.astro";
+import UmamiAnalytics from "@components/analytics/UmamiAnalytics.astro";
+import FancyboxManager from "@components/features/FancyboxManager.astro";
+import FontSetup from "@components/features/FontSetup.astro";
+import MusicManager from "@components/features/MusicManager.astro";
+import SakuraEffect from "@components/features/SakuraEffect.astro";
+import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
+
+import {
+	analyticsConfig,
+	backgroundWallpaper,
+	expressiveCodeConfig,
+	profileConfig,
+	siteConfig,
+} from "@/config";
+import {
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_HOME,
+	PAGE_WIDTH,
+} from "@/constants/constants";
+import { defaultFavicons } from "@/constants/icon";
+import type { Favicon } from "@/types/config";
+import { isHomePage } from "@/utils/layout-utils";
+import { url } from "@/utils/url-utils";
+
+import "@/styles/main.css";
+import "@/styles/variables.styl";
+import "@/styles/markdown-extend.styl";
+import "@rehype-callouts-theme";
+
+interface Props {
+	title?: string;
+	banner?: string;
+	description?: string;
+	lang?: string;
+	setOGTypeArticle?: boolean;
+	postSlug?: string;
+}
+
+let { title, description, lang, setOGTypeArticle, postSlug } = Astro.props;
+
+const isHomePageCheck = isHomePage(Astro.url.pathname);
+
+const configHue = siteConfig.themeColor.hue;
+const month = new Date().getMonth() + 1;
+const seasonHue = month === 12 || month <= 2 ? 210 : month >= 3 && month <= 5 ? 160 : month >= 6 && month <= 8 ? 195 : month >= 9 && month <= 11 ? 30 : configHue;
+const seasonalHue = seasonHue;
+
+const navbarTransparentMode = backgroundWallpaper.common?.navbar?.transparentMode || "semi";
+const shouldShowTopHighlight = navbarTransparentMode === "full" || navbarTransparentMode === "semifull";
+
+const enableBanner = backgroundWallpaper.mode === "banner";
+
+let pageTitle: string;
+if (title) {
+	pageTitle = `${title} - ${siteConfig.title}`;
+} else {
+	pageTitle = siteConfig.subtitle ? `${siteConfig.title} - ${siteConfig.subtitle}` : siteConfig.title;
+}
+
+let ogImageUrl: string | undefined;
+if (siteConfig.post.generateOgImages && postSlug) {
+	ogImageUrl = new URL(`/og/${postSlug}.png`, Astro.site).toString();
+}
+
+const favicons: Favicon[] = siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons;
+
+if (!lang) {
+	lang = `${siteConfig.lang}`;
+}
+const siteLang = lang.replace("_", "-");
+---
+
+<!doctype html>
+<html lang={siteLang} class="bg-(--page-bg) text-[14px] md:text-[16px]" data-wallpaper-mode={backgroundWallpaper.mode}>
+  <head>
+    <meta charset="UTF-8" />
+    {analyticsConfig?.googleAnalyticsId && <GoogleAnalytics analyticsId={analyticsConfig.googleAnalyticsId} />}
+    {analyticsConfig?.microsoftClarityId && <MicrosoftClarity clarityId={analyticsConfig.microsoftClarityId} />}
+    {analyticsConfig?.umamiAnalytics?.websiteId && (
+      <UmamiAnalytics websiteId={analyticsConfig.umamiAnalytics.websiteId} scriptUrl={analyticsConfig.umamiAnalytics.scriptUrl} replaysScriptUrl={analyticsConfig.umamiAnalytics.replaysScriptUrl} trackOutboundLinks={analyticsConfig.umamiAnalytics.trackOutboundLinks} collectWebVitals={analyticsConfig.umamiAnalytics.collectWebVitals} replays={analyticsConfig.umamiAnalytics.replays} />
+    )}
+    {analyticsConfig?.la51Analytics?.Id && <La51Analytics analyticsId={analyticsConfig.la51Analytics.Id} sdkUrl={analyticsConfig.la51Analytics?.sdkUrl} ck={analyticsConfig.la51Analytics?.ck} autoTrack={analyticsConfig.la51Analytics?.autoTrack} hashMode={analyticsConfig.la51Analytics?.hashMode} screenRecord={analyticsConfig.la51Analytics?.screenRecord} />}
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description || siteConfig.description || pageTitle} />
+    {siteConfig.keywords && siteConfig.keywords.length > 0 && <meta name="keywords" content={siteConfig.keywords.join(", ")} />}
+    <meta name="author" content={profileConfig.name} />
+
+    <meta property="og:site_name" content={siteConfig.title} />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description || siteConfig.description || pageTitle} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {setOGTypeArticle ? <meta property="og:type" content="article" /> : <meta property="og:type" content="website" />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={Astro.url} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description || siteConfig.description || pageTitle} />
+
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <style is:inline>
+      astro-dev-toolbar, astro-dev-overlay, astro-dev-toolbar-window {
+        display: none !important;
+      }
+    </style>
+    {favicons.map((favicon) => <link rel="icon" href={favicon.src.startsWith("/") ? url(favicon.src) : favicon.src} sizes={favicon.sizes} media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`} />)}
+
+    {siteConfig.imageOptimization?.noReferrerDomains && siteConfig.imageOptimization.noReferrerDomains.length > 0 && (
+      <script is:inline define:vars={{ noReferrerDomains: JSON.stringify(siteConfig.imageOptimization.noReferrerDomains) }}>
+        (function() {
+          const domains = JSON.parse(noReferrerDomains);
+          function matchesDomain(urlStr, patterns) {
+            try { const hostname = new URL(urlStr).hostname; return patterns.some(p => { const regex = new RegExp('^' + p.replace(/\./g, '\\\\.').replace(/\\*/g, '.*') + '$'); return regex.test(hostname); }); } catch { return false; }
+          }
+          function processImage(img) { if (!img.src || img.hasAttribute('referrerpolicy')) return; if (matchesDomain(img.src, domains)) img.setAttribute('referrerpolicy', 'no-referrer'); }
+          document.querySelectorAll('img').forEach(processImage);
+          new MutationObserver(mutations => { mutations.forEach(m => m.addedNodes.forEach(node => { if (node.nodeName === 'IMG') processImage(node); if (node.querySelectorAll) node.querySelectorAll('img').forEach(processImage); })); }).observe(document.documentElement, { childList: true, subtree: true });
+        })();
+      </script>
+    )}
+
+    <script is:inline define:vars={{ BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue, defaultMode: siteConfig.themeColor.defaultMode ?? "light", defaultWallpaperMode: backgroundWallpaper.mode, isWallpaperSwitchable: backgroundWallpaper.switchable ?? true, darkTheme: expressiveCodeConfig.darkTheme, lightTheme: expressiveCodeConfig.lightTheme, baseUrl: import.meta.env.BASE_URL, cardTransparentOpacity: backgroundWallpaper.overlay?.cardOpacity ?? 0.6, seasonalHue }}>
+      const LIGHT_MODE = "light"; const DARK_MODE = "dark"; const SYSTEM_MODE = "system";
+      const theme = localStorage.getItem("theme") || defaultMode;
+      function getSystemTheme() { return window.matchMedia("(prefers-color-scheme: dark)").matches ? DARK_MODE : LIGHT_MODE; }
+      function resolveTheme(themeValue) { return themeValue === SYSTEM_MODE ? getSystemTheme() : themeValue; }
+      const resolvedTheme = resolveTheme(theme);
+      const isDark = resolvedTheme === DARK_MODE;
+      if (isDark) document.documentElement.classList.add("dark"); else document.documentElement.classList.remove("dark");
+      document.documentElement.setAttribute("data-theme", isDark ? darkTheme : lightTheme);
+      const hue = localStorage.getItem("hue") || seasonalHue;
+      document.documentElement.style.setProperty("--hue", hue);
+      const storedCardOpacity = localStorage.getItem("overlayCardOpacity"); const parsedCardOpacity = storedCardOpacity === null ? NaN : Number.parseFloat(storedCardOpacity); const resolvedCardOpacity = Number.isFinite(parsedCardOpacity) ? Math.min(1, Math.max(0, parsedCardOpacity)) : cardTransparentOpacity;
+      document.documentElement.style.setProperty("--card-transparent-opacity", String(resolvedCardOpacity));
+      function calculateBannerHeightExtend() { let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100)); offset = offset - (offset % 4); document.documentElement.style.setProperty("--banner-height-extend", `${offset}px`); }
+      calculateBannerHeightExtend();
+      requestAnimationFrame(() => { const oldValue = parseInt(document.documentElement.style.getPropertyValue("--banner-height-extend")); calculateBannerHeightExtend(); const newValue = parseInt(document.documentElement.style.getPropertyValue("--banner-height-extend")); if (Math.abs(oldValue - newValue) > 4) requestAnimationFrame(calculateBannerHeightExtend); });
+      // wallpaper mode init
+      const WALLPAPER_BANNER = "banner"; const WALLPAPER_FULLSCREEN = "fullscreen"; const WALLPAPER_OVERLAY = "overlay"; const WALLPAPER_NONE = "none";
+      const wallpaperMode = isWallpaperSwitchable ? localStorage.getItem("wallpaperMode") || defaultWallpaperMode : defaultWallpaperMode;
+      document.documentElement.setAttribute("data-wallpaper-mode", wallpaperMode);
+      (function applyWallpaperMode() { requestAnimationFrame(function () { if (wallpaperMode === WALLPAPER_NONE || wallpaperMode === WALLPAPER_OVERLAY || wallpaperMode === WALLPAPER_FULLSCREEN) { if (document.body) { document.body.classList.remove("enable-banner"); document.body.classList.add("no-banner-layout"); } } else { if (document.body) { document.body.classList.add("enable-banner"); document.body.classList.remove("no-banner-layout"); } } if (wallpaperMode === WALLPAPER_OVERLAY) { if (document.body) document.body.classList.add("wallpaper-transparent"); } else { if (document.body) document.body.classList.remove("wallpaper-transparent"); } const wallpaperWrapper = document.getElementById("wallpaper-wrapper"); const isHomePage = window.location.pathname === baseUrl || window.location.pathname === "/"; if (wallpaperMode === WALLPAPER_OVERLAY) { if (wallpaperWrapper) { wallpaperWrapper.classList.add("wallpaper-overlay"); wallpaperWrapper.style.display = "block"; wallpaperWrapper.classList.remove("hidden", "opacity-0", "mobile-hide-banner"); wallpaperWrapper.classList.add("opacity-100"); wallpaperWrapper.style.top = ""; } } else if (wallpaperMode === WALLPAPER_FULLSCREEN) { if (wallpaperWrapper) { wallpaperWrapper.classList.remove("wallpaper-overlay"); wallpaperWrapper.classList.add("wallpaper-fullscreen"); const isMobile = window.innerWidth < 1024; if (isMobile && !isHomePage) { wallpaperWrapper.style.display = "none"; wallpaperWrapper.classList.add("mobile-hide-banner"); } else { wallpaperWrapper.style.display = "block"; wallpaperWrapper.classList.remove("hidden", "opacity-0", "mobile-hide-banner"); wallpaperWrapper.classList.add("opacity-100"); } wallpaperWrapper.style.top = ""; } } else if (wallpaperMode === WALLPAPER_NONE) { if (wallpaperWrapper) { wallpaperWrapper.style.display = "none"; wallpaperWrapper.classList.add("hidden", "opacity-0"); } } else { if (wallpaperWrapper) { wallpaperWrapper.classList.remove("wallpaper-overlay"); wallpaperWrapper.classList.remove("wallpaper-fullscreen"); const isMobile = window.innerWidth < 1024; if (isMobile && !isHomePage) { wallpaperWrapper.style.display = "none"; wallpaperWrapper.classList.add("mobile-hide-banner"); } else { wallpaperWrapper.style.display = "block"; wallpaperWrapper.classList.remove("mobile-hide-banner"); } } } const mainContentWrapper = document.querySelector(".w-full.z-30.pointer-events-none"); if (mainContentWrapper) { mainContentWrapper.style.setProperty("transition", "none", "important"); const isMobile = window.innerWidth < 1024; if (isMobile && !isHomePage) mainContentWrapper.classList.add("mobile-main-no-banner"); else mainContentWrapper.classList.remove("mobile-main-no-banner"); const isMobileNonHome = window.innerWidth < 1024 && !isHomePage; if (wallpaperMode === WALLPAPER_FULLSCREEN && !isMobileNonHome) { mainContentWrapper.style.position = "relative"; mainContentWrapper.style.top = "0"; mainContentWrapper.style.zIndex = "30"; mainContentWrapper.style.setProperty("margin-top", "1rem", "important"); } else if (isMobile && isHomePage && (wallpaperMode === WALLPAPER_BANNER || wallpaperMode === undefined)) { mainContentWrapper.style.removeProperty("top"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } else if (isMobileNonHome) { mainContentWrapper.style.setProperty("top", "5.5rem", "important"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } else if (wallpaperMode === WALLPAPER_BANNER && !isHomePage) { mainContentWrapper.style.setProperty("top", "calc(var(--banner-height) - 3rem)", "important"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } mainContentWrapper.style.visibility = "visible"; requestAnimationFrame(() => { mainContentWrapper.style.removeProperty("transition"); }); } const bannerTextOverlay = document.querySelector(".banner-home-text-overlay"); if (bannerTextOverlay) { const isHomePage = window.location.pathname === baseUrl || window.location.pathname === "/"; if ((wallpaperMode === WALLPAPER_BANNER || wallpaperMode === WALLPAPER_FULLSCREEN) && isHomePage) bannerTextOverlay.classList.remove("hidden"); else bannerTextOverlay.classList.add("hidden"); } }); })();
+      // waves / gradient / banner title init
+      (function applyWavesEnabled() { const wavesEnabled = localStorage.getItem("wavesEnabled"); if (wavesEnabled !== null) document.documentElement.setAttribute("data-waves-enabled", wavesEnabled); })();
+      (function applyGradientEnabled() { const gradientEnabled = localStorage.getItem("gradientEnabled"); if (gradientEnabled !== null) document.documentElement.setAttribute("data-gradient-enabled", gradientEnabled); })();
+      (function applyBannerTitleEnabled() { const bannerTitleEnabled = localStorage.getItem("bannerTitleEnabled"); if (bannerTitleEnabled !== null) document.documentElement.setAttribute("data-banner-title-enabled", bannerTitleEnabled); })();
+    </script>
+    <style define:vars={{ configHue, "page-width": `${siteConfig.pageWidth ?? PAGE_WIDTH}rem` }}></style>
+
+    <slot name="head" />
+    <link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`} />
+    <FontSetup />
+  </head>
+  <body class="min-h-screen" class:list={[{ "is-home": isHomePageCheck, "lg:is-home": isHomePageCheck, "enable-banner": enableBanner, "sticky-navbar": siteConfig.navbar.stickyNavbar ?? false, "enable-card-border": siteConfig.card?.border, "card-follow-theme-hue": siteConfig.card?.followTheme }]}>
+    <div id="progress-bar"></div>
+    {shouldShowTopHighlight && <div class="top-gradient-highlight" />}
+    <ConfigCarrier />
+    <MusicManager />
+    <slot />
+    <SakuraEffect />
+    <FancyboxManager />
+  </body>
+</html>
+
+<style is:global define:vars={{ "banner-height-home": `${BANNER_HEIGHT_HOME}vh`, "banner-height": `${BANNER_HEIGHT}vh` }}>
+  @reference "../styles/main.css";
+
+  @layer components {
+    .enable-banner #wallpaper-wrapper { height: var(--banner-height-home); transform: translateY(var(--banner-height-extend)); }
+    .enable-banner #banner { height: var(--banner-height-home); transform: translateY(0); }
+    .enable-banner #main-grid { transform: translateY(var(--banner-height-extend)); }
+    .enable-banner #top-row { height: calc(var(--banner-height-home) - 4.5rem); @apply transition-all duration-300; }
+    .no-banner-layout #wallpaper-wrapper.wallpaper-fullscreen { height: 100vh; min-height: 100vh; max-height: 100vh; position: relative; top: 0; transform: none; overflow: hidden; }
+    .no-banner-layout #wallpaper-wrapper.wallpaper-fullscreen img { width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center !important; filter: none !important; opacity: 1 !important; }
+  }
+
+  @layer utilities {
+    .enable-banner #sidebar-sticky { top: calc(1rem - var(--banner-height-extend)) !important; }
+    .enable-banner #left-sidebar-sticky { top: calc(1rem - var(--banner-height-extend)) !important; }
+    .enable-banner #right-sidebar-sticky { top: calc(1rem - var(--banner-height-extend)) !important; }
+    body.enable-banner.sticky-navbar #sidebar-sticky, body.enable-banner.sticky-navbar #left-sidebar-sticky, body.enable-banner.sticky-navbar #right-sidebar-sticky { top: calc(5.5rem - var(--banner-height-extend)) !important; }
+    .navbar-hidden { @apply opacity-0 -translate-y-16; }
+    body.sticky-navbar #top-row { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 80 !important; height: 4.5rem !important; }
+    body.sticky-navbar #navbar-wrapper { position: static !important; opacity: 1 !important; transform: none !important; }
+    body.sticky-navbar #navbar-wrapper.navbar-hidden { opacity: 1 !important; transform: none !important; }
+    html[data-wallpaper-mode="none"] body.sticky-navbar #sidebar-sticky, html[data-wallpaper-mode="none"] body.sticky-navbar #left-sidebar-sticky, html[data-wallpaper-mode="none"] body.sticky-navbar #right-sidebar-sticky, html[data-wallpaper-mode="overlay"] body.sticky-navbar #sidebar-sticky, html[data-wallpaper-mode="overlay"] body.sticky-navbar #left-sidebar-sticky, html[data-wallpaper-mode="overlay"] body.sticky-navbar #right-sidebar-sticky, body.sticky-navbar.no-banner-layout #sidebar-sticky, body.sticky-navbar.no-banner-layout #left-sidebar-sticky, body.sticky-navbar.no-banner-layout #right-sidebar-sticky { top: 5.5rem !important; }
+  }
+
+  @media (max-width: 1023px) {
+    body.enable-banner:not(.lg\\:is-home) #main-grid { transform: none !important; }
+    body.enable-banner:not(.lg\\:is-home) #top-row { height: auto !important; }
+    body.enable-banner:not(.lg\\:is-home) #sidebar-sticky, body.enable-banner:not(.lg\\:is-home) #left-sidebar-sticky, body.enable-banner:not(.lg\\:is-home) #right-sidebar-sticky { top: 1rem !important; }
+    html[data-wallpaper-mode="none"] body.sticky-navbar #sidebar-sticky, html[data-wallpaper-mode="none"] body.sticky-navbar #left-sidebar-sticky, html[data-wallpaper-mode="none"] body.sticky-navbar #right-sidebar-sticky, html[data-wallpaper-mode="overlay"] body.sticky-navbar #sidebar-sticky, html[data-wallpaper-mode="overlay"] body.sticky-navbar #left-sidebar-sticky, html[data-wallpaper-mode="overlay"] body.sticky-navbar #right-sidebar-sticky, body.sticky-navbar.no-banner-layout #sidebar-sticky, body.sticky-navbar.no-banner-layout #left-sidebar-sticky, body.sticky-navbar.no-banner-layout #right-sidebar-sticky { top: 5.5rem !important; }
+    body.sticky-navbar #top-row { height: 4.5rem !important; }
+  }
+</style>
+
+<script>
+  import { pathsEqual, url } from "@/utils/url-utils";
+  import { BANNER_HEIGHT, BANNER_HEIGHT_HOME, BANNER_HEIGHT_EXTEND } from "@/constants/constants";
+  import { backgroundWallpaper, expressiveCodeConfig, siteConfig } from "@/config";
+
+  const bannerEnabled = !!document.getElementById("wallpaper-wrapper");
+  const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
+
+  function setClickOutsideToClose(panel: string, ignores: string[]) {
+    document.addEventListener("click", (event) => {
+      let panelDom = document.getElementById(panel);
+      if (!panelDom) return;
+      let tDom = event.target;
+      if (!(tDom instanceof Node)) return;
+      for (let ig of ignores) { let ie = document.getElementById(ig); if (ie == tDom || ie?.contains(tDom)) return; }
+      panelDom.classList.add("float-panel-closed");
+    });
+  }
+  setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"]);
+  setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"]);
+  setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"]);
+  setClickOutsideToClose("wallpaper-mode-panel", ["wallpaper-mode-panel", "wallpaper-mode-switch"]);
+  setClickOutsideToClose("theme-mode-panel", ["theme-mode-panel", "scheme-switch"]);
+
+  function initCustomScrollbar() {
+    const katexElements = document.querySelectorAll(".katex-display:not([data-scrollbar-initialized])") as NodeListOf<HTMLElement>;
+    katexElements.forEach((element) => {
+      if (!element.parentNode) return;
+      const container = document.createElement("div"); container.className = "katex-display-container";
+      element.parentNode.insertBefore(container, element); container.appendChild(element);
+      container.style.cssText = "overflow-x: auto;";
+      element.setAttribute("data-scrollbar-initialized", "true");
+    });
+  }
+
+  function initHorizontalOverflowContainers() {
+    const markdownTables = document.querySelectorAll(".custom-md table:not([data-horizontal-scroll-ready])") as NodeListOf<HTMLElement>;
+    markdownTables.forEach((table) => {
+      if (table.parentElement?.classList.contains("horizontal-scroll-container")) { table.dataset.horizontalScrollReady = "true"; return; }
+      const container = document.createElement("div"); container.className = "horizontal-scroll-container";
+      table.parentNode?.insertBefore(container, table); container.appendChild(table);
+      table.dataset.horizontalScrollReady = "true";
+    });
+  }
+
+  function initContentOverflowEnhancements() { initCustomScrollbar(); initHorizontalOverflowContainers(); }
+  function scheduleContentOverflowEnhancements() { initContentOverflowEnhancements(); requestAnimationFrame(() => initContentOverflowEnhancements()); setTimeout(() => initContentOverflowEnhancements(), 100); }
+
+  function showBanner() { const isBannerMode = backgroundWallpaper.mode === "banner"; if (!isBannerMode) return; requestAnimationFrame(() => { const banner = document.getElementById("banner"); if (banner) banner.classList.remove("opacity-0", "scale-105"); const mobileBanner = document.querySelector('.block.lg\\:hidden[alt="Mobile banner image of the blog"]'); if (mobileBanner) { mobileBanner.classList.remove("opacity-0", "scale-105"); mobileBanner.classList.add("opacity-100"); } }); }
+
+  const setup = () => {
+    window.swup.hooks.replace("scroll:top", (visit: { to: { url: string } }, args: { options: ScrollIntoViewOptions }) => {
+      const wallpaperMode = document.documentElement.getAttribute("data-wallpaper-mode");
+      if (wallpaperMode === "fullscreen" && !pathsEqual(visit.to.url, url("/"))) {
+        const mainGrid = document.getElementById("main-grid");
+        if (mainGrid) { mainGrid.scrollIntoView({ behavior: args.options?.behavior || "auto" }); return true; }
+      }
+      window.scrollTo({ top: 0, left: 0, ...args.options }); return true;
+    });
+
+    window.swup.hooks.on("link:click", (_visit: any, { el }: { el: HTMLAnchorElement }) => {
+      document.documentElement.style.setProperty("--content-delay", "0ms");
+      const targetHref = el.getAttribute("href") || "";
+      const targetPathname = (() => { try { return new URL(targetHref, window.location.href).pathname; } catch { return targetHref; } })();
+      const isSamePage = pathsEqual(targetPathname, window.location.pathname);
+      if (isSamePage) document.documentElement.classList.remove("is-page-transitioning");
+      if (!isSamePage) document.documentElement.classList.add("is-page-transitioning");
+      const navbar = document.getElementById("navbar-wrapper");
+      if (navbar && stickyNavbar) navbar.classList.remove("navbar-hidden");
+      else if (bannerEnabled && navbar) { const threshold = window.innerHeight * (BANNER_HEIGHT_HOME / 100) - 88; if (document.documentElement.scrollTop >= threshold) navbar.classList.add("navbar-hidden"); }
+    });
+
+    window.swup.hooks.on("content:replace", () => {
+      const isHome = pathsEqual(window.location.pathname, url("/"));
+      const currentMode = document.documentElement.getAttribute("data-wallpaper-mode");
+      const isMobileForBanner = window.innerWidth < 1024;
+      const mainEl = document.querySelector(".w-full.z-30.pointer-events-none") as HTMLElement | null;
+      if (isMobileForBanner && (currentMode === "banner" || currentMode === "fullscreen") && !isHome) {
+        const wrapper = document.getElementById("wallpaper-wrapper");
+        if (wrapper) { wrapper.style.display = "none"; wrapper.classList.add("mobile-hide-banner"); }
+        if (mainEl) { mainEl.classList.add("mobile-main-no-banner"); mainEl.style.setProperty("top", "5.5rem", "important"); mainEl.style.position = ""; mainEl.style.zIndex = ""; mainEl.style.setProperty("margin-top", "0", "important"); }
+      }
+      if (!isMobileForBanner && currentMode === "fullscreen" && mainEl) { mainEl.style.position = "relative"; mainEl.style.zIndex = "30"; mainEl.style.setProperty("top", "0", "important"); mainEl.style.setProperty("margin-top", "1rem", "important"); }
+      if (!isMobileForBanner && currentMode === "banner" && mainEl) { mainEl.style.setProperty("top", "calc(var(--banner-height) - 3rem)", "important"); mainEl.style.position = ""; mainEl.style.zIndex = ""; mainEl.style.setProperty("margin-top", "0", "important"); }
+      updateSidebarComponentsVisibility();
+      scheduleContentOverflowEnhancements();
+      import("@/utils/icon-loader").then(({ initIconLoader }) => initIconLoader());
+      const tocWrapper = document.getElementById("toc-wrapper"); const isArticlePage = tocWrapper !== null;
+      if (isArticlePage) { const tocElement = document.querySelector("table-of-contents"); if (tocElement && typeof (tocElement as any).init === "function") setTimeout(() => (tocElement as any).init(), 100); }
+      const navbar = document.getElementById("navbar");
+      if (navbar) { const transparentMode = navbar.getAttribute("data-transparent-mode"); if (transparentMode === "semifull") { if (typeof (window as any).initSemifullScrollDetection === "function") (window as any).initSemifullScrollDetection(); } }
+    });
+
+    window.swup.hooks.on("visit:start", (visit: { to: { url: string } }) => {
+      const progressBar = document.getElementById("progress-bar"); if (progressBar) { progressBar.classList.remove("finishing", "done"); void progressBar.offsetWidth; progressBar.classList.add("loading"); }
+      const bodyElement = document.querySelector("body"); const isHomePage = pathsEqual(visit.to.url, url("/"));
+      const mainGrid = document.getElementById("main-grid"); if (mainGrid) mainGrid.style.setProperty("transition", "none", "important");
+      if (isHomePage) { bodyElement!.classList.add("lg:is-home"); bodyElement!.classList.add("is-home"); } else { bodyElement!.classList.remove("lg:is-home"); bodyElement!.classList.remove("is-home"); }
+      if (mainGrid) { void mainGrid.offsetWidth; mainGrid.style.removeProperty("transition"); }
+      const currentWallpaperMode = document.documentElement.getAttribute("data-wallpaper-mode");
+      if (currentWallpaperMode !== "banner") { bodyElement!.classList.remove("enable-banner"); bodyElement!.classList.add("no-banner-layout"); if (currentWallpaperMode === "overlay") bodyElement!.classList.add("wallpaper-transparent"); else bodyElement!.classList.remove("wallpaper-transparent"); }
+      const navbar = document.getElementById("navbar");
+      if (navbar) { navbar.setAttribute("data-is-home", isHomePage.toString()); const transparentMode = navbar.getAttribute("data-transparent-mode"); if (transparentMode === "semifull") { if (typeof (window as any).initSemifullScrollDetection === "function") (window as any).initSemifullScrollDetection(); } }
+      const isMobile = window.innerWidth < 1024;
+      if (isMobile) { const postListContainer = document.getElementById("post-list-container"); if (postListContainer) postListContainer.style.transition = "none"; }
+      const wallpaperWrapper = document.getElementById("wallpaper-wrapper");
+      const mainContentWrapper = document.querySelector(".w-full.z-30.pointer-events-none") as HTMLElement | null;
+      if (isMobile && wallpaperWrapper && mainContentWrapper) {
+        if (isHomePage) { mainContentWrapper.style.setProperty("transition", "none", "important"); wallpaperWrapper.classList.remove("mobile-hide-banner"); wallpaperWrapper.style.display = ""; setTimeout(() => { mainContentWrapper.classList.remove("mobile-main-no-banner"); const visitCurrentMode = document.documentElement.getAttribute("data-wallpaper-mode"); if (visitCurrentMode === "fullscreen") { mainContentWrapper.style.position = "relative"; mainContentWrapper.style.zIndex = "30"; mainContentWrapper.style.setProperty("top", "0", "important"); mainContentWrapper.style.setProperty("margin-top", "1rem", "important"); } else if (visitCurrentMode === "overlay" || visitCurrentMode === "none") { mainContentWrapper.style.setProperty("top", "5.5rem", "important"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } else if (isMobile) { mainContentWrapper.style.removeProperty("top"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } else { mainContentWrapper.style.setProperty("top", "calc(var(--banner-height) - 3.5rem)", "important"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } }, 150); } else { wallpaperWrapper.classList.add("mobile-hide-banner"); mainContentWrapper.classList.add("mobile-main-no-banner"); mainContentWrapper.style.setProperty("top", "5.5rem", "important"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); }
+      } else if (!isMobile && wallpaperWrapper) { wallpaperWrapper.style.display = ""; wallpaperWrapper.classList.remove("mobile-hide-banner"); if (mainContentWrapper) { mainContentWrapper.classList.remove("mobile-main-no-banner"); const visitDesktopMode = document.documentElement.getAttribute("data-wallpaper-mode"); if (visitDesktopMode === "fullscreen") { mainContentWrapper.style.position = "relative"; mainContentWrapper.style.zIndex = "30"; mainContentWrapper.style.setProperty("top", "0", "important"); mainContentWrapper.style.setProperty("margin-top", "1rem", "important"); } if (visitDesktopMode === "banner") { mainContentWrapper.style.setProperty("top", "calc(var(--banner-height) - 3rem)", "important"); mainContentWrapper.style.position = ""; mainContentWrapper.style.zIndex = ""; mainContentWrapper.style.setProperty("margin-top", "0", "important"); } } }
+      const heightExtend = document.getElementById("page-height-extend"); if (heightExtend) heightExtend.classList.remove("hidden");
+      let toc = document.getElementById("toc-wrapper"); if (toc) toc.classList.add("toc-not-ready");
+      const shouldUseSmoothScroll = window.innerWidth >= 768; const isFullscreenNonHome = document.documentElement.getAttribute("data-wallpaper-mode") === "fullscreen" && !isHomePage;
+      if (shouldUseSmoothScroll && !isFullscreenNonHome) window.scrollTo({ top: 0, behavior: "auto" });
+    });
+
+    window.swup.hooks.on("page:view", () => {
+      updateMainGridCols(); updateSidebarComponentsVisibility();
+      const heightExtend = document.getElementById("page-height-extend"); if (heightExtend) heightExtend.classList.remove("hidden");
+      const isHome = pathsEqual(window.location.pathname, url("/"));
+      const currentMode = document.documentElement.getAttribute("data-wallpaper-mode"); const isMobileForBanner = window.innerWidth < 1024;
+      const wrapper = document.getElementById("wallpaper-wrapper") as HTMLElement | null; const mainEl = document.querySelector(".w-full.z-30.pointer-events-none") as HTMLElement | null;
+      if (isMobileForBanner && (currentMode === "banner" || currentMode === "fullscreen")) { if (!isHome) { if (wrapper) { wrapper.style.display = "none"; wrapper.classList.add("mobile-hide-banner"); } if (mainEl) { mainEl.classList.add("mobile-main-no-banner"); mainEl.style.setProperty("top", "5.5rem", "important"); mainEl.style.position = ""; mainEl.style.zIndex = ""; mainEl.style.setProperty("margin-top", "0", "important"); } } else { if (wrapper) { wrapper.style.display = "block"; wrapper.classList.remove("mobile-hide-banner"); } if (mainEl) setTimeout(() => mainEl.style.removeProperty("transition"), 50); } }
+      if (!isMobileForBanner && currentMode === "fullscreen" && mainEl) { mainEl.style.position = "relative"; mainEl.style.zIndex = "30"; mainEl.style.setProperty("top", "0", "important"); mainEl.style.setProperty("margin-top", "1rem", "important"); }
+      if (!isMobileForBanner && currentMode === "banner" && mainEl) { mainEl.style.setProperty("top", "calc(var(--banner-height) - 3rem)", "important"); mainEl.style.position = ""; mainEl.style.zIndex = ""; mainEl.style.setProperty("margin-top", "0", "important"); }
+      const isMobile = window.innerWidth < 1024; if (isMobile) setTimeout(() => { const postListContainer = document.getElementById("post-list-container"); if (postListContainer) postListContainer.style.transition = ""; }, 600);
+      const storedTheme = localStorage.getItem("theme") || siteConfig.themeColor.defaultMode || "light"; let isDark = false; if (storedTheme === "system") isDark = window.matchMedia('(prefers-color-scheme: dark)').matches; else isDark = storedTheme === "dark";
+      const expectedTheme = isDark ? expressiveCodeConfig.darkTheme : expressiveCodeConfig.lightTheme; const currentTheme = document.documentElement.getAttribute("data-theme"); if (currentTheme !== expectedTheme) document.documentElement.setAttribute("data-theme", expectedTheme);
+      setTimeout(() => { if (document.getElementById("tcomment")) { const pageLoadedEvent = new CustomEvent("firefly:page:loaded", { detail: { path: window.location.pathname, timestamp: Date.now() } }); document.dispatchEvent(pageLoadedEvent); } }, 300);
+    });
+
+    window.swup.hooks.on("visit:end", (_visit: { to: { url: string } }) => {
+      const progressBar = document.getElementById("progress-bar"); if (progressBar) { progressBar.classList.remove("loading"); progressBar.classList.add("finishing"); setTimeout(() => { progressBar.classList.remove("finishing"); progressBar.classList.add("done"); setTimeout(() => progressBar.classList.remove("done"), 300); }, 200); }
+      setTimeout(() => { const heightExtend = document.getElementById("page-height-extend"); if (heightExtend) heightExtend.classList.add("hidden"); const toc = document.getElementById("toc-wrapper"); if (toc) toc.classList.remove("toc-not-ready"); document.documentElement.classList.remove("is-page-transitioning"); scrollFunction(); }, 200);
+    });
+  };
+  if (window?.swup?.hooks) setup(); else document.addEventListener("swup:enable", setup);
+
+  document.addEventListener("astro:page-load", scheduleContentOverflowEnhancements);
+  document.addEventListener("password:decrypted", () => setTimeout(scheduleContentOverflowEnhancements, 200));
+  let backToTopBtn = document.getElementById("back-to-top-btn"); let toc = document.getElementById("toc-wrapper"); let navbar = document.getElementById("navbar-wrapper");
+  const sidebarStickyState: Record<"left" | "right", { topClass: "top-0" | "top-4"; hasVisibleTop: boolean }> = { left: { topClass: "top-0", hasVisibleTop: false }, right: { topClass: "top-0", hasVisibleTop: false } };
+
+  function scrollFunction() { if (document.documentElement.classList.contains("is-page-transitioning")) return; const scrollTop = document.documentElement.scrollTop; const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100); const navbarElement = document.getElementById("navbar"); updateSidebarStickySpacing(); const operations: (() => void)[] = []; if (backToTopBtn) operations.push(() => { if (scrollTop > bannerHeight) backToTopBtn.classList.remove("hide"); else backToTopBtn.classList.add("hide"); }); if (bannerEnabled && toc) operations.push(() => { if (scrollTop > bannerHeight) toc.classList.remove("toc-hide"); else toc.classList.add("toc-hide"); }); if (stickyNavbar && navbar) operations.push(() => { navbar.classList.remove("navbar-hidden"); }); else if (bannerEnabled && navbar) operations.push(() => { const threshold = window.innerHeight * (BANNER_HEIGHT_HOME / 100) - 88; if (scrollTop >= threshold) navbar.classList.add("navbar-hidden"); else navbar.classList.remove("navbar-hidden"); }); if (navbarElement) operations.push(() => { if (scrollTop > 8) navbarElement.classList.add("navbar-sticky-shadow"); else navbarElement.classList.remove("navbar-sticky-shadow"); }); if (operations.length > 0) requestAnimationFrame(() => operations.forEach((op) => op())); }
+
+  let scrollTimeout: number;
+  window.addEventListener("scroll", () => { if (scrollTimeout) cancelAnimationFrame(scrollTimeout); scrollTimeout = requestAnimationFrame(scrollFunction); }, { passive: true });
+  scrollFunction();
+  window.onresize = () => { let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100)); offset = offset - (offset % 4); document.documentElement.style.setProperty("--banner-height-extend", `${offset}px`); };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { showBanner(); scheduleContentOverflowEnhancements(); }); else { showBanner(); scheduleContentOverflowEnhancements(); }
+
+  const isCurrentPagePost = () => window.location.pathname.includes("/posts/") || window.location.pathname.includes("/post/");
+
+  function updateMainGridCols() { const mainGrid = document.getElementById("main-grid"); if (!mainGrid) return; const isPostPage = isCurrentPagePost(); const sidebarPosition = mainGrid.getAttribute("data-sidebar-position") || "left"; const tabletSidebar = mainGrid.getAttribute("data-tablet-sidebar") || "left"; const showBothSidebarsOnPostPage = mainGrid.getAttribute("data-show-both-sidebars-on-post") === "true"; const shouldBothSidebars = isPostPage && sidebarPosition !== "both" && showBothSidebarsOnPostPage; let newGridClasses: string; if (sidebarPosition === "both" || shouldBothSidebars) { const effectiveTabletSidebar = (shouldBothSidebars && sidebarPosition === "right") ? "right" : tabletSidebar; if (effectiveTabletSidebar === "right") newGridClasses = "grid-cols-1 md:grid-cols-[1fr_17.5rem] xl:grid-cols-[17.5rem_1fr_17.5rem]"; else newGridClasses = "grid-cols-1 md:grid-cols-[17.5rem_1fr] xl:grid-cols-[17.5rem_1fr_17.5rem]"; } else if (sidebarPosition === "right") { newGridClasses = "grid-cols-1 md:grid-cols-[1fr_17.5rem]"; } else { newGridClasses = "grid-cols-1 md:grid-cols-[17.5rem_1fr]"; } ["grid-cols-1", "md:grid-cols-[17.5rem_1fr]", "md:grid-cols-[1fr_17.5rem]", "xl:grid-cols-[17.5rem_1fr_17.5rem]"].forEach(cls => mainGrid.classList.remove(cls)); newGridClasses.split(" ").forEach(cls => cls && mainGrid.classList.add(cls)); if (sidebarPosition === "right") { const rightSidebar = document.getElementById("right-sidebar"); const swupContainer = document.getElementById("swup-container"); const footer = mainGrid.querySelector('.footer'); if (shouldBothSidebars) { rightSidebar?.classList.add("xl:col-start-3"); swupContainer?.classList.add("xl:col-start-2", "xl:col-end-3"); if (footer) { footer.classList.remove("md:col-start-1", "xl:col-start-1"); footer.classList.add("xl:col-start-2"); } } else { rightSidebar?.classList.remove("xl:col-start-3"); swupContainer?.classList.remove("xl:col-start-2", "xl:col-end-3"); if (footer) { footer.classList.add("md:col-start-1", "xl:col-start-1"); footer.classList.remove("xl:col-start-2"); } } } }
+
+  function updateSidebarComponentsVisibility() { const isPostPage = isCurrentPagePost(); document.querySelectorAll(".widget-hide-on-post").forEach((widget) => { isPostPage ? widget.classList.add("hidden") : widget.classList.remove("hidden"); }); document.querySelectorAll(".widget-hide-on-non-post").forEach((widget) => { !isPostPage ? widget.classList.add("hidden") : widget.classList.remove("hidden"); }); updateSidebarStickySpacing(); }
+
+  function updateSidebarStickySpacing() { const scrollTop = document.documentElement.scrollTop || window.scrollY || 0; const isScrolled = scrollTop > 2; (["left", "right"] as const).forEach((side) => { const sticky = document.getElementById(`${side}-sidebar-sticky`); if (!sticky) return; const topContainer = sticky.previousElementSibling as HTMLElement | null; const hasVisibleTop = !!topContainer && topContainer.offsetHeight > 1; if (topContainer) { if (hasVisibleTop !== sidebarStickyState[side].hasVisibleTop) sidebarStickyState[side].hasVisibleTop = hasVisibleTop; if (hasVisibleTop) topContainer.classList.add("mb-4"); else topContainer.classList.remove("mb-4"); } const nextTopClass: "top-0" | "top-4" = hasVisibleTop || isScrolled ? "top-4" : "top-0"; if (sidebarStickyState[side].topClass !== nextTopClass) { sticky.classList.remove(sidebarStickyState[side].topClass); sticky.classList.add(nextTopClass); sidebarStickyState[side].topClass = nextTopClass; } }); }
+
+  import { initWallpaperMode, initThemeListener } from "@/utils/setting-utils"; import { initIconLoader } from "@/utils/icon-loader";
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => { updateMainGridCols(); updateSidebarComponentsVisibility(); initWallpaperMode(); initThemeListener(); initIconLoader(); }); else { updateMainGridCols(); updateSidebarComponentsVisibility(); initWallpaperMode(); initThemeListener(); initIconLoader(); }
+
+  function initImageLoadFadeIn() { const placeholders = document.querySelectorAll<HTMLElement>('.lqip-placeholder'); placeholders.forEach(placeholder => { const container = placeholder.parentElement; if (!container) return; const img = container.querySelector<HTMLImageElement>('img, picture img'); if (!img) return; if (img.complete && img.naturalWidth > 0) { img.style.opacity = '1'; placeholder.classList.add('loaded'); } else { img.addEventListener('load', () => { img.style.opacity = '1'; placeholder.classList.add('loaded'); }, { once: true }); img.addEventListener('error', () => { placeholder.classList.add('loaded'); }, { once: true }); } }); }
+  initImageLoadFadeIn(); document.addEventListener('astro:page-load', initImageLoadFadeIn); document.addEventListener('swup:contentReplaced', () => requestAnimationFrame(initImageLoadFadeIn));
+</script>

@@ -1,0 +1,123 @@
+---
+import { Icon } from "astro-icon/components";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+---
+
+<MainGridLayout title="打字测试" description="测试你的打字速度">
+  <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-6 md:px-9 py-6 relative w-full">
+      <div class="mb-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="h-8 w-8 rounded-lg bg-(--primary) flex items-center justify-center text-white dark:text-black/70">
+            <Icon is:inline name="material-symbols:keyboard" class="text-[1.5rem]"></Icon>
+          </div>
+          <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+            打字速度测试
+          </div>
+        </div>
+        <p class="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          测试你的打字速度和准确率，看看你一分钟能打多少个字。
+        </p>
+      </div>
+
+      <div id="typing-app" class="space-y-4">
+        <div id="target-text" class="rounded-xl bg-neutral-100/70 p-4 text-lg leading-relaxed text-neutral-700 dark:bg-neutral-800/50 dark:text-neutral-200 font-mono whitespace-pre-wrap"></div>
+        <textarea id="typing-input" class="w-full rounded-xl border border-(--line-divider) bg-neutral-50/60 p-4 text-lg leading-relaxed font-mono resize-none focus:border-(--primary) focus:ring-1 focus:ring-(--primary) outline-none transition dark:bg-neutral-900/50 dark:text-neutral-100" rows="4" placeholder="在这里打字..."></textarea>
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <div class="flex items-center gap-6">
+            <div><span class="text-xs text-neutral-500">速度 </span><span id="wpm" class="text-2xl font-black text-(--primary)">0</span><span class="text-xs text-neutral-500"> WPM</span></div>
+            <div><span class="text-xs text-neutral-500">准确率 </span><span id="accuracy" class="text-2xl font-black text-(--primary)">0</span><span class="text-xs text-neutral-500">%</span></div>
+            <div><span class="text-xs text-neutral-500">用时 </span><span id="timer" class="text-2xl font-black text-(--primary)">0</span><span class="text-xs text-neutral-500">s</span></div>
+          </div>
+          <button id="reset-btn" class="btn-regular rounded-lg px-4 py-2 text-sm font-medium">重新开始</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<style>
+  #target-text.correct { color: #22c55e; }
+  #typing-input { transition: border-color 0.2s; }
+</style>
+
+<script is:inline>
+(function() {
+  const texts = [
+    "今天天气真不错，适合出去散步或者待在家里写代码。写代码的时候可以听听音乐放松一下。",
+    "AI 正在改变世界，而我们每个人都可以参与其中。不需要成为专家，只需要保持好奇和学习的热情。",
+    "洛克王国是一个很有趣的游戏，可以收集各种小精灵，探索不同的地图，完成各种任务和挑战。",
+    "CS是一款经典的第一人称射击游戏，需要团队配合、精准的枪法和快速的反应能力。每一局都是一次新的挑战。",
+    "写博客可以记录自己的学习和成长过程，分享知识和经验，还能认识很多有趣的朋友。坚持写下去很重要。",
+    "编程就像搭积木，把一个个简单的模块组合起来，就能创造出复杂而强大的应用。关键是要理解每一块积木的作用。",
+    "学习新技术最好的方式是动手实践。光看不练，永远学不会；动手做了，哪怕出错，也会加深理解。",
+  ];
+
+  const targetEl = document.getElementById("target-text");
+  const inputEl = document.getElementById("typing-input");
+  const wpmEl = document.getElementById("wpm");
+  const accEl = document.getElementById("accuracy");
+  const timerEl = document.getElementById("timer");
+  const resetBtn = document.getElementById("reset-btn");
+
+  let currentText = "";
+  let startTime = null;
+  let timerInterval = null;
+  let finished = false;
+
+  function pickText() {
+    return texts[Math.floor(Math.random() * texts.length)];
+  }
+
+  function reset() {
+    currentText = pickText();
+    targetEl.textContent = currentText;
+    targetEl.classList.remove("correct");
+    inputEl.value = "";
+    inputEl.disabled = false;
+    inputEl.focus();
+    wpmEl.textContent = "0";
+    accEl.textContent = "0";
+    timerEl.textContent = "0";
+    startTime = null;
+    finished = false;
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  inputEl.addEventListener("input", () => {
+    if (finished) return;
+    if (!startTime) {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        if (!startTime) return;
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        timerEl.textContent = elapsed;
+      }, 1000);
+    }
+
+    const typed = inputEl.value;
+    let correctChars = 0;
+    for (let i = 0; i < typed.length && i < currentText.length; i++) {
+      if (typed[i] === currentText[i]) correctChars++;
+    }
+    const accuracy = typed.length > 0 ? Math.round((correctChars / typed.length) * 100) : 0;
+    accEl.textContent = accuracy;
+
+    const elapsedMin = (Date.now() - startTime) / 60000;
+    if (typed.length >= currentText.length) {
+      const wpm = Math.round((currentText.length / elapsedMin) * accuracy / 100);
+      wpmEl.textContent = wpm;
+      targetEl.classList.add("correct");
+      finished = true;
+      if (timerInterval) clearInterval(timerInterval);
+    } else if (typed.length > 0) {
+      const wpm = Math.round((typed.length / elapsedMin) * accuracy / 100);
+      wpmEl.textContent = wpm;
+    }
+  });
+
+  resetBtn.addEventListener("click", reset);
+  reset();
+})();
+</script>

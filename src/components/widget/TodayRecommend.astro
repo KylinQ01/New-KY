@@ -1,0 +1,50 @@
+---
+import { Icon } from "astro-icon/components";
+import WidgetLayout from "@components/common/WidgetLayout.astro";
+import type { WidgetComponentConfig } from "@/types/config";
+
+interface Props { class?: string; style?: string; widgetConfig?: WidgetComponentConfig; }
+const { class: className, style, widgetConfig } = Astro.props;
+const showTitle = widgetConfig?.showTitle !== false;
+
+const today = new Date();
+const dayOfWeek = today.getDay();
+
+const recommendations: Record<number, string[]> = {
+  0: ["整理博客文章", "写一篇碎碎念", "整理相册"],
+  1: ["读一篇技术文章", "学一个新 npm 包", "整理代码片段"],
+  2: ["写代码到深夜", "研究 AI 最新动态", "分享一条编程心得"],
+  3: ["打几局 CS", "去洛克王国逛逛", "写一篇游戏日常"],
+  4: ["回顾学过的知识", "整理代码笔记", "更新你的 GitHub"],
+  5: ["放松打游戏", "整理照片上传相册", "录一段游戏视频"],
+  6: ["休息和充电", "看一部喜欢的番剧", "整理下周的学习计划"],
+};
+
+const tips = recommendations[dayOfWeek] || recommendations[0];
+const tip = tips[Math.floor(Math.random() * tips.length)];
+
+const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+---
+
+<WidgetLayout name="今日推荐" showTitle={showTitle} id="today-recommend" class={className} style={style}>
+  <div class="overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-sky-50/90 via-white/80 to-blue-50/70 shadow-sm dark:border-white/10 dark:from-sky-950/30 dark:via-neutral-900/60 dark:to-blue-950/20">
+    <div class="flex items-center gap-2 border-b border-black/5 px-4 py-2.5 dark:border-white/5">
+      <div class="flex size-6 items-center justify-center rounded-lg bg-sky-500/15 dark:bg-sky-400/15">
+        <Icon is:inline name="material-symbols:lightbulb-outline-rounded" class="text-sm text-sky-600 dark:text-sky-400" />
+      </div>
+      <span class="text-[11px] font-medium tracking-wide text-sky-700/80 dark:text-sky-300/80">今日推荐</span>
+      <span class="ml-auto text-[10px] text-neutral-400 dark:text-neutral-500">
+        {weekdays[dayOfWeek]}
+      </span>
+    </div>
+    <div class="px-5 py-5">
+      <p class="text-sm font-medium text-neutral-800 dark:text-neutral-100 leading-relaxed">
+        {tip}
+      </p>
+      <div class="mt-3 flex items-center gap-2">
+        <div class="h-px flex-1 bg-gradient-to-r from-sky-400/30 to-transparent dark:from-sky-500/20"></div>
+        <span class="text-[10px] text-neutral-400 dark:text-neutral-500">#今日推荐</span>
+      </div>
+    </div>
+  </div>
+</WidgetLayout>

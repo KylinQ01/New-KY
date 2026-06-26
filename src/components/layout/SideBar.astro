@@ -1,0 +1,147 @@
+---
+import type { MarkdownHeading } from "astro";
+import Advertisement from "@/components/widget/Advertisement.astro";
+import Announcement from "@/components/widget/Announcement.astro";
+import Calendar from "@/components/widget/Calendar.astro";
+import Categories from "@/components/widget/Categories.astro";
+import DateCountdown from "@/components/widget/DateCountdown.astro";
+import DailyQuote from "@/components/widget/DailyQuote.astro";
+import TodayRecommend from "@/components/widget/TodayRecommend.astro";
+import Music from "@/components/widget/Music.astro";
+import Profile from "@/components/widget/Profile.astro";
+import Weather from "@/components/widget/Weather.astro";
+import SidebarTOC from "@/components/widget/SidebarTOC.astro";
+import SiteInfo from "@/components/widget/SiteInfo.astro";
+import SiteStats from "@/components/widget/SiteStats.astro";
+import Tags from "@/components/widget/Tags.astro";
+import { sidebarLayoutConfig } from "@/config";
+import type {
+  MobileBottomComponentConfig,
+  WidgetComponentConfig,
+} from "@/types/config";
+
+interface Props {
+  class?: string;
+  headings?: MarkdownHeading[];
+  side?: "left" | "right" | "bottom";
+}
+
+const SIDEBAR_SIDE = { LEFT: "left", RIGHT: "right", BOTTOM: "bottom" } as const;
+const COMPONENT_POSITION = { TOP: "top", STICKY: "sticky" } as const;
+const ANIMATION_DELAY_UNIT = 50;
+
+const componentMap = {
+  profile: Profile,
+  announcement: Announcement,
+  categories: Categories,
+  tags: Tags,
+  sidebarToc: SidebarTOC,
+  advertisement: Advertisement,
+  stats: SiteStats,
+  calendar: Calendar,
+  music: Music,
+  weather: Weather,
+  dateCountdown: DateCountdown,
+  dailyQuote: DailyQuote,
+  todayRecommend: TodayRecommend,
+  siteInfo: SiteInfo,
+};
+
+const side = (Astro.props.side || SIDEBAR_SIDE.LEFT) as (typeof SIDEBAR_SIDE)[keyof typeof SIDEBAR_SIDE];
+const className = Astro.props.class;
+
+const getComponents = (): (WidgetComponentConfig | MobileBottomComponentConfig)[] => {
+  if (side === SIDEBAR_SIDE.LEFT) return sidebarLayoutConfig.leftComponents;
+  if (side === SIDEBAR_SIDE.RIGHT) return sidebarLayoutConfig.rightComponents;
+  if (side === SIDEBAR_SIDE.BOTTOM) return sidebarLayoutConfig.mobileBottomComponents;
+  return [];
+};
+
+const filterAndSortComponents = (components: (WidgetComponentConfig | MobileBottomComponentConfig)[]) => {
+  return components.filter((comp) => comp.enable);
+};
+
+const getComponentsByPosition = (components: (WidgetComponentConfig | MobileBottomComponentConfig)[]) => {
+  const topComponents = components.filter((c) => "position" in c && c.position === COMPONENT_POSITION.TOP) as WidgetComponentConfig[];
+  const stickyComponents = components.filter((c) => "position" in c && c.position === COMPONENT_POSITION.STICKY) as WidgetComponentConfig[];
+  return { topComponents, stickyComponents };
+};
+
+const getAnimationDelay = (index: number): string => `${index * ANIMATION_DELAY_UNIT}ms`;
+
+const isPostPage = Astro.url.pathname.includes("/posts/");
+
+const isComponentInitiallyVisible = (config: WidgetComponentConfig | MobileBottomComponentConfig): boolean => {
+  if ("showOnPostPage" in config && config.showOnPostPage === false && isPostPage) return false;
+  if ("hideOnNonPostPage" in config && config.hideOnNonPostPage === true && !isPostPage) return false;
+  return true;
+};
+
+const getComponentProps = (config: WidgetComponentConfig | MobileBottomComponentConfig, index: number): Record<string, unknown> => {
+  const baseProps: Record<string, unknown> = {
+    class: "onload-animation",
+    style: `animation-delay: ${getAnimationDelay(index)}`,
+    widgetConfig: config,
+  };
+
+  if ("showOnPostPage" in config && config.showOnPostPage === false) {
+    baseProps.class = `${baseProps.class} widget-hide-on-post`;
+    if (isPostPage) baseProps.class = `${baseProps.class} hidden`;
+  }
+  if ("hideOnNonPostPage" in config && config.hideOnNonPostPage === true) {
+    baseProps.class = `${baseProps.class} widget-hide-on-non-post`;
+    if (!isPostPage) baseProps.class = `${baseProps.class} hidden`;
+  }
+  if (config.type === "sidebarToc") {
+    return { ...baseProps, headings: Astro.props.headings || [] };
+  }
+  return baseProps;
+};
+
+const allComponents = getComponents();
+const filteredComponents = filterAndSortComponents(allComponents);
+const isMobileBottom = side === SIDEBAR_SIDE.BOTTOM;
+const { topComponents, stickyComponents } = !isMobileBottom ? getComponentsByPosition(filteredComponents) : { topComponents: [], stickyComponents: [] };
+const bottomComponents = isMobileBottom ? filteredComponents : [];
+const hasInitiallyVisibleTopComponents = topComponents.some(isComponentInitiallyVisible);
+---
+
+{
+  (topComponents.length > 0 || stickyComponents.length > 0 || bottomComponents.length > 0) && (
+    <div id={`${side}-sidebar`} class:list={[className, "flex flex-col w-full pt-0"]}>
+      {isMobileBottom ? (
+        <div class="flex flex-col w-full gap-4">
+          {bottomComponents.map((comp, index) => {
+            const Component = componentMap[comp.type];
+            if (!Component) return null;
+            const props = getComponentProps(comp, index) as any;
+            return <Component {...props} />;
+          })}
+        </div>
+      ) : (
+        <>
+          {topComponents.length > 0 && (
+            <div class:list={["flex flex-col w-full gap-4", hasInitiallyVisibleTopComponents && "mb-4"]}>
+              {topComponents.map((comp, index) => {
+                const Component = componentMap[comp.type];
+                if (!Component) return null;
+                const props = getComponentProps(comp, index) as any;
+                return <Component {...props} />;
+              })}
+            </div>
+          )}
+          {stickyComponents.length > 0 && (
+            <div id={`${side}-sidebar-sticky`} class:list={["flex flex-col w-full mt-0 gap-4", "sticky", hasInitiallyVisibleTopComponents ? "top-4" : "top-0"]}>
+              {stickyComponents.map((comp, index) => {
+                const Component = componentMap[comp.type];
+                if (!Component) return null;
+                const props = getComponentProps(comp, topComponents.length + index) as any;
+                return <Component {...props} />;
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}

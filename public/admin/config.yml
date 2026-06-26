@@ -1,0 +1,61 @@
+locale: zh_Hans
+backend:
+  name: github
+  repo: KylinQ01/firefly
+  branch: master
+
+media_folder: public/uploads
+public_folder: /uploads
+site_url: https://firefly.cuteleaf.cn
+logo_url: /favicon/favicon.ico
+publish_mode: simple
+
+collections:
+  - name: posts
+    label: 文章
+    label_singular: 文章
+    folder: src/content/posts
+    create: true
+    delete: true
+    slug: '{{slug}}'
+    extension: md
+    format: frontmatter
+    preview_path: posts/{{slug}}
+    fields:
+      - { name: title, label: 标题, widget: string }
+      - { name: published, label: 发布时间, widget: datetime, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
+      - { name: updated, label: 更新时间, widget: datetime, required: false, format: 'YYYY-MM-DD', date_format: 'YYYY-MM-DD', time_format: false }
+      - { name: draft, label: 草稿, widget: boolean, default: false, required: false }
+      - { name: pinned, label: 置顶, widget: boolean, default: false, required: false }
+      - { name: description, label: 摘要, widget: text, required: false }
+      - { name: image, label: 封面图, widget: image, required: false }
+      - { name: category, label: 分类, widget: string, required: false }
+      - { name: tags, label: 标签, widget: list, required: false, allow_add: true }
+      - { name: lang, label: 语言, widget: select, required: false, default: zh_CN, options: [zh_CN, zh_TW, en, ja, ru] }
+      - { name: author, label: 作者, widget: string, required: false, default: Kylin }
+      - { name: comment, label: 开启评论, widget: boolean, default: true, required: false }
+      - { name: password, label: 访问密码, widget: string, required: false }
+      - { name: passwordHint, label: 密码提示, widget: string, required: false }
+      - { name: sourceLink, label: 来源链接, widget: string, required: false }
+      - { name: licenseName, label: 许可证名称, widget: string, required: false }
+      - { name: licenseUrl, label: 许可证链接, widget: string, required: false }
+      - { name: body, label: 正文, widget: markdown }
+
+  - name: pages
+    label: 单页
+    delete: false
+    editor:
+      preview: false
+    files:
+      - name: about
+        label: 关于页
+        file: src/content/spec/about.md
+        fields:
+          - { name: body, label: 正文, widget: markdown }
+      - name: guestbook
+        label: 留言板
+        file: src/content/spec/guestbook.md
+        fields:
+          - { name: title, label: 标题, widget: string }
+          - { name: description, label: 描述, widget: string, required: false }
+          - { name: body, label: 正文, widget: markdown }

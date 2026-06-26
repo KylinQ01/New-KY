@@ -1,0 +1,115 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import type { PostForList } from "@/utils/content-utils";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { getPostUrlBySlug, url } from "@/utils/url-utils";
+
+interface Props {
+  relatedPosts: PostForList[];
+  currentPostId: string;
+}
+
+const { relatedPosts, currentPostId } = Astro.props;
+const apiUrl = url("/api/allPostMeta.json");
+const relatedIds = JSON.stringify(relatedPosts.map((p) => p.id));
+const noRelatedPostsText = i18n(I18nKey.noRelatedPosts);
+const noRandomPostsText = i18n(I18nKey.noRandomPosts);
+---
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+  <div class="card-base p-5 md:p-6 flex flex-col">
+    <div class="flex items-center gap-2 pb-3 mb-1 border-b border-dashed border-(--line-divider)">
+      <Icon is:inline name="material-symbols:signpost" class="text-xl text-(--primary)" />
+      <span class="text-base font-bold text-black/75 dark:text-white/75 transition">{i18n(I18nKey.relatedPosts)}</span>
+      <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-(--btn-regular-bg) text-(--btn-content) transition">{i18n(I18nKey.smartRecommend)}</span>
+    </div>
+    {relatedPosts.length > 0 ? (
+      relatedPosts.map((post, idx) => (
+        <a href={getPostUrlBySlug(post.id)} class:list={["group flex items-center gap-3 px-3 py-3 -mx-1 rounded-lg", "transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-[0.98]", idx < relatedPosts.length - 1 && "border-b border-dashed border-(--line-divider)"]}>
+          <div class="shrink-0 w-6 h-6 rounded-md bg-(--enter-btn-bg) text-(--primary) flex items-center justify-center text-sm font-bold transition">{idx + 1}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-sm text-black/75 dark:text-white/75 truncate transition group-hover:text-(--primary)">{post.data.title}</div>
+            <div class="flex items-center gap-1.5 text-xs text-black/30 dark:text-white/30 transition mt-0.5">
+              {post.data.category && <span class="shrink-0 px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-black/40 dark:text-white/40">{post.data.category}</span>}
+              <span class="truncate">{post.data.description || formatDateToYYYYMMDD(post.data.published)}</span>
+            </div>
+          </div>
+          <Icon is:inline name="material-symbols:chevron-right-rounded" class="shrink-0 text-xl text-black/15 dark:text-white/15 transition group-hover:text-(--primary) group-hover:translate-x-0.5" />
+        </a>
+      ))
+    ) : (
+      <div class="flex-1 flex flex-col items-center justify-center min-h-40 text-black/30 dark:text-white/30 transition">
+        <Icon is:inline name="material-symbols:article-outline" class="text-4xl mb-3 opacity-50" />
+        <span class="text-sm">{noRelatedPostsText}</span>
+      </div>
+    )}
+  </div>
+
+  <div class="card-base p-5 md:p-6 flex flex-col">
+    <div class="flex items-center gap-2 pb-3 mb-1 border-b border-dashed border-(--line-divider)">
+      <Icon is:inline name="material-symbols:recommend" class="text-xl text-(--primary)" />
+      <span class="text-base font-bold text-black/75 dark:text-white/75 transition">{i18n(I18nKey.randomPosts)}</span>
+      <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-(--btn-regular-bg) text-(--btn-content) transition">{i18n(I18nKey.randomRecommend)}</span>
+    </div>
+    <div id="random-posts-list" class="flex-1 flex items-center justify-center" data-api-url={apiUrl} data-current-id={currentPostId} data-related-ids={relatedIds}>
+      <div id="random-posts-empty" style="display:none" class="flex flex-col items-center text-black/30 dark:text-white/30 transition">
+        <Icon is:inline name="material-symbols:article-outline" class="text-4xl mb-3 opacity-50" />
+        <span class="text-sm">{noRandomPostsText}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+function renderRandomPosts() {
+  var container = document.getElementById('random-posts-list');
+  if (!container) return;
+
+  var apiUrl = container.dataset.apiUrl;
+  var currentId = container.dataset.currentId;
+  var relatedIds = JSON.parse(container.dataset.relatedIds || '[]');
+  var excludeSet = {};
+  excludeSet[currentId] = true;
+  for (var i = 0; i < relatedIds.length; i++) excludeSet[relatedIds[i]] = true;
+
+  function render(allPosts) {
+    var emptyTemplate = document.getElementById('random-posts-empty');
+    container.innerHTML = '';
+    var candidates = allPosts.filter(function(p) { return !excludeSet[p.id]; });
+    if (!candidates.length) {
+      if (emptyTemplate) {
+        emptyTemplate.style.display = '';
+        container.appendChild(emptyTemplate);
+      }
+      return;
+    }
+    var shuffled = candidates.sort(function() { return Math.random() - 0.5; }).slice(0, 5);
+    var list = document.createElement('div');
+    list.className = 'w-full space-y-2';
+    shuffled.forEach(function(post, idx) {
+      var link = document.createElement('a');
+      link.href = '/posts/' + post.id.replace(/\.(md|mdx|markdown)$/i, '') + '/';
+      link.className = 'group flex items-center gap-3 px-3 py-3 -mx-1 rounded-lg transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-[0.98]';
+      link.innerHTML = '<div class="shrink-0 w-6 h-6 rounded-md bg-(--enter-btn-bg) text-(--primary) flex items-center justify-center text-sm font-bold transition">' + (idx + 1) + '</div>' +
+        '<div class="flex-1 min-w-0"><div class="font-bold text-sm text-black/75 dark:text-white/75 truncate transition group-hover:text-(--primary)">' + post.title + '</div>' +
+        '<div class="text-xs text-black/30 dark:text-white/30 transition mt-0.5 truncate">' + (post.description || post.published) + '</div></div>' +
+        '<div class="shrink-0 text-xl text-black/15 dark:text-white/15 transition group-hover:text-(--primary) group-hover:translate-x-0.5">›</div>';
+      list.appendChild(link);
+    });
+    container.appendChild(list);
+  }
+
+  fetch(apiUrl).then(function(r) { return r.json(); }).then(render).catch(function() {
+    var emptyTemplate = document.getElementById('random-posts-empty');
+    if (emptyTemplate) {
+      emptyTemplate.style.display = '';
+      container.appendChild(emptyTemplate);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', renderRandomPosts);
+document.addEventListener('swup:contentReplaced', function() { setTimeout(renderRandomPosts, 50); });
+</script>

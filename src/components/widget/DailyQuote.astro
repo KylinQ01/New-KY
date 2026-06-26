@@ -1,0 +1,56 @@
+---
+import { Icon } from "astro-icon/components";
+import WidgetLayout from "@components/common/WidgetLayout.astro";
+import type { WidgetComponentConfig } from "@/types/config";
+
+interface Props { class?: string; style?: string; widgetConfig?: WidgetComponentConfig; }
+const { class: className, style, widgetConfig } = Astro.props;
+const showTitle = widgetConfig?.showTitle !== false;
+
+const quotes = [
+  "代码写得好，bug 自然少 —— 除非你是故意的。",
+  "今天不写代码，明天就没有 bug 可以修。",
+  "世界上只有两种人：写单元测试的，和即将写单元测试的。",
+  "程序员的日常：写代码 → 改 bug → 再写代码 → 再改 bug。",
+  "AI 不会取代程序员，但会用 AI 的程序员可能会。",
+  "当你觉得自己很聪明的时候，去写一串正则表达式吧。",
+  "键盘敲得响，代码不一定好 —— 但心情一定好。",
+  "今天的你比昨天多了一个 npm 包。",
+  "生活就像递归，你得先定义好基础情况。",
+  "CS:GO 告诉我，团队合作比枪法更重要。写代码也是。",
+  "人生苦短，用 Python。游戏漫长，打 CS。",
+  "最好的代码就是不用写的代码 —— 但 AI 会帮你写。",
+  "debug 的过程 = 怀疑人生 → 怀疑编译器 → 发现少了一个分号。",
+  "洛克王国教会我：慢下来，享受过程。写代码也是。",
+  "如果你的代码没有报错，那一定是还没跑过。",
+  "今天的灵感：把 bug 改名叫 feature。",
+];
+
+const today = new Date();
+const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+const idx = seed % quotes.length;
+const quote = quotes[idx];
+---
+
+<WidgetLayout name="每日一言" showTitle={showTitle} id="daily-quote" class={className} style={style}>
+  <div class="overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-amber-50/90 via-white/80 to-orange-50/70 shadow-sm dark:border-white/10 dark:from-amber-950/30 dark:via-neutral-900/60 dark:to-orange-950/20">
+    <div class="flex items-center gap-2 border-b border-black/5 px-4 py-2.5 dark:border-white/5">
+      <div class="flex size-6 items-center justify-center rounded-lg bg-amber-500/15 dark:bg-amber-400/15">
+        <Icon is:inline name="material-symbols:format-quote" class="text-sm text-amber-600 dark:text-amber-400" />
+      </div>
+      <span class="text-[11px] font-medium tracking-wide text-amber-700/80 dark:text-amber-300/80">每日一言</span>
+      <span class="ml-auto text-[10px] text-neutral-400 dark:text-neutral-500">
+        {today.toLocaleDateString("zh-CN", { month: "short", day: "numeric" })}
+      </span>
+    </div>
+    <div class="px-5 py-5">
+      <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-200 italic tracking-wide">
+        「{quote}」
+      </p>
+      <div class="mt-3 flex items-center gap-2">
+        <div class="h-px flex-1 bg-gradient-to-r from-amber-400/30 to-transparent dark:from-amber-500/20"></div>
+        <span class="text-[10px] text-neutral-400 dark:text-neutral-500">#每日编程正能量</span>
+      </div>
+    </div>
+  </div>
+</WidgetLayout>
