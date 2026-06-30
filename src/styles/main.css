@@ -8,6 +8,7 @@
 @import './tags.css';
 @import './gallery.css';
 @import './anime-bangumi.css';
+@import './beautify.css';
 
 @plugin '@tailwindcss/typography';
 
@@ -584,5 +585,189 @@ html {
 /* 分页信息样式 */
 .pagination-info {
   @apply text-sm text-(--text-secondary) text-center mb-2;
+}
+
+/* ============================================
+   美化效果 - 卡片悬浮动效
+   ============================================ */
+.post-card-wrapper {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-card-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.12),
+              0 4px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+:root.dark .post-card-wrapper:hover {
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.4),
+              0 4px 16px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* 卡片封面图片悬浮缩放 */
+.post-card-wrapper .cover-image-container {
+  overflow: hidden;
+}
+
+.post-card-wrapper .cover-image-container img {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.post-card-wrapper:hover .cover-image-container img {
+  transform: scale(1.05);
+}
+
+/* ============================================
+   美化效果 - 滚动入场动画
+   ============================================ */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 延迟动画 - 用于多个元素依次出现 */
+.scroll-reveal.delay-1 { transition-delay: 0.1s; }
+.scroll-reveal.delay-2 { transition-delay: 0.2s; }
+.scroll-reveal.delay-3 { transition-delay: 0.3s; }
+.scroll-reveal.delay-4 { transition-delay: 0.4s; }
+.scroll-reveal.delay-5 { transition-delay: 0.5s; }
+
+/* ============================================
+   美化效果 - 渐变边框光效
+   ============================================ */
+.gradient-border {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: var(--radius-large);
+  overflow: hidden;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-light) 25%,
+    var(--primary-dark) 50%,
+    var(--primary) 75%,
+    var(--primary-light) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: gradient-rotate 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+@keyframes gradient-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 卡片基础渐变边框（始终显示微弱光效） */
+.card-base {
+  position: relative;
+}
+
+.card-base::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(var(--primary-rgb), 0.1) 50%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.card-base:hover::after {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-rgb), 0.2) 0%,
+    rgba(var(--primary-rgb), 0.1) 50%,
+    rgba(var(--primary-rgb), 0.2) 100%
+  );
+}
+
+/* ============================================
+   美化效果 - 首页装饰元素
+   ============================================ */
+.home-decoration {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 浮动几何图形 */
+.floating-shape {
+  position: absolute;
+  opacity: 0.1;
+  animation: float-shape 6s ease-in-out infinite;
+}
+
+.floating-shape:nth-child(1) {
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.floating-shape:nth-child(2) {
+  top: 60%;
+  right: 10%;
+  animation-delay: 2s;
+}
+
+.floating-shape:nth-child(3) {
+  bottom: 20%;
+  left: 15%;
+  animation-delay: 4s;
+}
+
+@keyframes float-shape {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
 }
 

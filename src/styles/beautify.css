@@ -1,0 +1,677 @@
+/* ==========================================================================
+   美化效果 - 增强版
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 鼠标光晕跟随效果
+   -------------------------------------------------------------------------- */
+.cursor-glow {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  filter: blur(60px);
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+}
+
+:root.dark .cursor-glow {
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+.cursor-glow.active {
+  opacity: 0.15;
+}
+
+:root.dark .cursor-glow.active {
+  opacity: 0.1;
+}
+
+/* 暗色模式下调整光晕颜色 */
+:root.dark .cursor-glow {
+  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 80%, white) 0%, transparent 70%);
+}
+
+/* --------------------------------------------------------------------------
+   2. 3D 卡片倾斜效果
+   -------------------------------------------------------------------------- */
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tilt-card-inner {
+  transform: translateZ(20px);
+}
+
+.tilt-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tilt-card:hover::before {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   3. 点击涟漪效果
+   -------------------------------------------------------------------------- */
+.ripple-effect {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple-expand 0.6s ease-out forwards;
+}
+
+@keyframes ripple-expand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. 数字滚动动画
+   -------------------------------------------------------------------------- */
+.animated-number {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.animated-number.counting {
+  animation: number-pop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes number-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. 浮动环境光球
+   -------------------------------------------------------------------------- */
+.ambient-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: ambient-float 20s ease-in-out infinite;
+}
+
+.ambient-orb:nth-child(1) {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  background: var(--primary);
+  animation-delay: 0s;
+}
+
+.ambient-orb:nth-child(2) {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  right: -100px;
+  background: color-mix(in oklch, var(--primary) 60%, #ff6b6b);
+  animation-delay: -7s;
+}
+
+.ambient-orb:nth-child(3) {
+  width: 350px;
+  height: 350px;
+  bottom: -100px;
+  left: 30%;
+  background: color-mix(in oklch, var(--primary) 50%, #4ecdc4);
+  animation-delay: -14s;
+}
+
+@keyframes ambient-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(50px, -30px) scale(1.1);
+  }
+  50% {
+    transform: translate(-30px, 50px) scale(0.9);
+  }
+  75% {
+    transform: translate(30px, 30px) scale(1.05);
+  }
+}
+
+/* 暗色模式下降低光球不透明度 */
+:root.dark .ambient-orb {
+  opacity: 0.15;
+}
+
+/* 仅在首页显示环境光球（可通过类控制） */
+.ambient-orbs-hidden .ambient-orb {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   6. 动态链接下划线
+   -------------------------------------------------------------------------- */
+.animated-link {
+  position: relative;
+  background-image: linear-gradient(var(--primary), var(--primary));
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  transition: background-size 0.3s ease;
+}
+
+.animated-link:hover {
+  background-size: 100% 2px;
+}
+
+/* --------------------------------------------------------------------------
+   7. 加载骨架屏闪烁
+   -------------------------------------------------------------------------- */
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--btn-regular-bg) 25%,
+    var(--btn-plain-bg-hover) 50%,
+    var(--btn-regular-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-loading 1.5s infinite;
+}
+
+@keyframes shimmer-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. 鼠标视差效果
+   -------------------------------------------------------------------------- */
+.parallax-layer {
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+}
+
+.parallax-layer[data-depth="1"] {
+  transform: translateZ(0);
+}
+
+.parallax-layer[data-depth="2"] {
+  transform: translateZ(0);
+}
+
+.parallax-layer[data-depth="3"] {
+  transform: translateZ(0);
+}
+
+/* --------------------------------------------------------------------------
+   9. 渐变背景动画
+   -------------------------------------------------------------------------- */
+.animated-gradient {
+  background: linear-gradient(135deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 80%, #ff6b6b) 25%,
+    color-mix(in oklch, var(--primary) 60%, #4ecdc4) 50%,
+    color-mix(in oklch, var(--primary) 80%, #a8e6cf) 75%,
+    var(--primary) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. 文字打字机效果
+   -------------------------------------------------------------------------- */
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--primary);
+  animation:
+    typewriter 2s steps(20, end),
+    blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: var(--primary);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. 卡片发光边框
+   -------------------------------------------------------------------------- */
+.glow-border {
+  position: relative;
+  border-radius: var(--radius-large);
+  overflow: hidden;
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    var(--primary),
+    color-mix(in oklch, var(--primary) 80%, #ff6b6b),
+    color-mix(in oklch, var(--primary) 60%, #4ecdc4),
+    color-mix(in oklch, var(--primary) 80%, #a8e6cf),
+    var(--primary)
+  );
+  animation: rotate-border 4s linear infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-border:hover::before {
+  opacity: 1;
+}
+
+@keyframes rotate-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. 浮动标签动画
+   -------------------------------------------------------------------------- */
+.floating-tag {
+  animation: tag-float 3s ease-in-out infinite;
+}
+
+@keyframes tag-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. 脉冲效果
+   -------------------------------------------------------------------------- */
+.pulse-ring {
+  position: relative;
+}
+
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--primary);
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. 文字渐变动画
+   -------------------------------------------------------------------------- */
+.text-gradient {
+  background: linear-gradient(135deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 80%, #ff6b6b) 50%,
+    color-mix(in oklch, var(--primary) 60%, #4ecdc4) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: text-gradient-shift 3s ease infinite;
+}
+
+@keyframes text-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   15. 按钮涟漪效果
+   -------------------------------------------------------------------------- */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  animation: btn-ripple-animation 0.6s ease-out;
+  pointer-events: none;
+}
+
+@keyframes btn-ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   16. 滚动进度条
+   -------------------------------------------------------------------------- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--primary);
+  z-index: 9999;
+  transition: width 0.1s ease;
+  box-shadow: 0 0 10px color-mix(in oklch, var(--primary) 60%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   17. 浮动导航指示器
+   -------------------------------------------------------------------------- */
+.nav-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 3px 3px 0 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --------------------------------------------------------------------------
+   18. 卡片悬浮光效
+   -------------------------------------------------------------------------- */
+.card-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-glow:hover::after {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   19. 文字呼吸效果
+   -------------------------------------------------------------------------- */
+.text-breathe {
+  animation: text-breathe 3s ease-in-out infinite;
+}
+
+@keyframes text-breathe {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   20. 浮动装饰元素
+   -------------------------------------------------------------------------- */
+.decoration-float {
+  animation: decoration-float 6s ease-in-out infinite;
+}
+
+@keyframes decoration-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   21. 边框流动动画
+   -------------------------------------------------------------------------- */
+.border-flow {
+  position: relative;
+  border-radius: var(--radius-large);
+}
+
+.border-flow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--primary),
+    transparent
+  );
+  background-size: 200% 100%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: border-flow-animation 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.border-flow:hover::before {
+  opacity: 1;
+}
+
+@keyframes border-flow-animation {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   22. 鼠标悬停放大
+   -------------------------------------------------------------------------- */
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   23. 旋转动画
+   -------------------------------------------------------------------------- */
+.rotate-animation {
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   24. 弹跳动画
+   -------------------------------------------------------------------------- */
+.bounce-animation {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   25. 闪烁效果
+   -------------------------------------------------------------------------- */
+.twinkle {
+  animation: twinkle 1.5s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ==========================================================================
+   响应式调整
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .cursor-glow {
+    width: 200px;
+    height: 200px;
+  }
+
+  .ambient-orb {
+    filter: blur(40px);
+    opacity: 0.2;
+  }
+
+  :root.dark .ambient-orb {
+    opacity: 0.1;
+  }
+}
+
+/* ==========================================================================
+   性能优化
+   ========================================================================== */
+
+.cursor-glow,
+.ambient-orb,
+.parallax-layer {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 页面不可见时暂停动画 */
+@media (prefers-reduced-motion: reduce) {
+  .cursor-glow,
+  .ambient-orb,
+  .parallax-layer,
+  .animated-gradient,
+  .text-gradient,
+  .glow-border::before,
+  .border-flow::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   主题切换过渡保护
+   ========================================================================== */
+
+.is-theme-transitioning .cursor-glow,
+.is-theme-transitioning .ambient-orb,
+.is-theme-transitioning .glow-border::before,
+.is-theme-transitioning .border-flow::before {
+  transition: none !important;
+  animation: none !important;
+}
