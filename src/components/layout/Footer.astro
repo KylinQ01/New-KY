@@ -28,7 +28,7 @@ if (footerConfig.enable) {
 <hr class="divider-gradient !mx-8 md:!mx-32" />
 
 <div
-  class="footer-card transition rounded-2xl mb-12 mx-4 md:mx-32 px-6 py-8 flex flex-col items-center justify-center relative overflow-hidden"
+  class="footer-card transition rounded-2xl mb-12 mx-4 md:mx-32 px-6 py-10 flex flex-col items-center justify-center relative overflow-hidden"
 >
   <!-- 背景装饰光球 -->
   <div class="footer-orb footer-orb-1"></div>
@@ -93,26 +93,26 @@ if (footerConfig.enable) {
 </div>
 
 <style>
-  /* 页脚卡片渐变背景 */
+  /* 页脚卡片渐变背景（电影化增强版） */
   .footer-card {
     background:
-      radial-gradient(ellipse at 20% 0%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, color-mix(in oklch, var(--primary) 10%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 0%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 50%),
       var(--card-bg);
     box-shadow:
-      0 8px 32px -8px color-mix(in oklch, var(--primary) 20%, transparent),
+      0 12px 40px -10px color-mix(in oklch, var(--primary) 25%, transparent),
       var(--shadow-sm);
-    border: 1px solid color-mix(in oklch, var(--primary) 15%, var(--line-divider));
+    border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--line-divider));
     position: relative;
   }
 
   :root.dark .footer-card {
     background:
-      radial-gradient(ellipse at 20% 0%, color-mix(in oklch, var(--primary) 18%, transparent) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 0%, color-mix(in oklch, var(--primary) 20%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, color-mix(in oklch, var(--primary) 18%, transparent) 0%, transparent 50%),
       var(--card-bg);
     box-shadow:
-      0 8px 32px -8px color-mix(in oklch, var(--primary) 30%, transparent),
+      0 12px 40px -10px color-mix(in oklch, var(--primary) 35%, transparent),
       var(--shadow-sm);
   }
 
@@ -120,97 +120,97 @@ if (footerConfig.enable) {
   .footer-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(60px);
+    filter: blur(80px);
     pointer-events: none;
     z-index: 0;
   }
 
   .footer-orb-1 {
-    width: 200px;
-    height: 200px;
-    top: -80px;
-    left: -60px;
-    background: color-mix(in oklch, var(--primary) 40%, #ff6b6b);
-    opacity: 0.3;
-    animation: footer-orb-float-1 8s ease-in-out infinite;
+    width: 250px;
+    height: 250px;
+    top: -100px;
+    left: -80px;
+    background: color-mix(in oklch, var(--primary) 45%, #ff6b6b);
+    opacity: 0.35;
+    animation: footer-orb-float-1 10s ease-in-out infinite;
   }
 
   .footer-orb-2 {
-    width: 160px;
-    height: 160px;
+    width: 200px;
+    height: 200px;
     top: 50%;
-    right: -60px;
-    background: color-mix(in oklch, var(--primary) 35%, #4ecdc4);
-    opacity: 0.25;
-    animation: footer-orb-float-2 10s ease-in-out infinite;
+    right: -80px;
+    background: color-mix(in oklch, var(--primary) 40%, #4ecdc4);
+    opacity: 0.3;
+    animation: footer-orb-float-2 12s ease-in-out infinite;
   }
 
   .footer-orb-3 {
-    width: 140px;
-    height: 140px;
-    bottom: -60px;
+    width: 180px;
+    height: 180px;
+    bottom: -80px;
     left: 30%;
-    background: color-mix(in oklch, var(--primary) 30%, #a8e6cf);
-    opacity: 0.2;
-    animation: footer-orb-float-3 12s ease-in-out infinite;
+    background: color-mix(in oklch, var(--primary) 35%, #a8e6cf);
+    opacity: 0.25;
+    animation: footer-orb-float-3 14s ease-in-out infinite;
   }
 
   @keyframes footer-orb-float-1 {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(30px, 20px) scale(1.1); }
+    50% { transform: translate(40px, 30px) scale(1.15); }
   }
 
   @keyframes footer-orb-float-2 {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-25px, -15px) scale(0.95); }
+    50% { transform: translate(-30px, -20px) scale(0.9); }
   }
 
   @keyframes footer-orb-float-3 {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(20px, -25px) scale(1.05); }
+    50% { transform: translate(25px, -30px) scale(1.1); }
   }
 
   /* 顶部装饰线 */
   .footer-top-line {
     position: absolute;
     top: 0;
-    left: 10%;
-    right: 10%;
+    left: 8%;
+    right: 8%;
     height: 2px;
     background: linear-gradient(90deg,
       transparent 0%,
-      color-mix(in oklch, var(--primary) 50%, transparent) 30%,
+      color-mix(in oklch, var(--primary) 60%, transparent) 25%,
       var(--primary) 50%,
-      color-mix(in oklch, var(--primary) 50%, transparent) 70%,
+      color-mix(in oklch, var(--primary) 60%, transparent) 75%,
       transparent 100%
     );
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   /* 底部装饰线 */
   .footer-bottom-line {
     position: absolute;
     bottom: 0;
-    left: 20%;
-    right: 20%;
+    left: 15%;
+    right: 15%;
     height: 1px;
     background: linear-gradient(90deg,
       transparent 0%,
-      color-mix(in oklch, var(--primary) 30%, transparent) 50%,
+      color-mix(in oklch, var(--primary) 40%, transparent) 50%,
       transparent 100%
     );
-    opacity: 0.4;
+    opacity: 0.5;
   }
 
   /* 名字发光效果 */
   .footer-name-glow {
-    text-shadow: 0 0 12px color-mix(in oklch, var(--primary) 40%, transparent);
-    animation: name-glow-pulse 3s ease-in-out infinite;
+    text-shadow: 0 0 15px color-mix(in oklch, var(--primary) 50%, transparent);
+    animation: name-glow-pulse 4s ease-in-out infinite;
   }
 
   @keyframes name-glow-pulse {
-    0%, 100% { text-shadow: 0 0 8px color-mix(in oklch, var(--primary) 30%, transparent); }
-    50% { text-shadow: 0 0 16px color-mix(in oklch, var(--primary) 50%, transparent); }
+    0%, 100% { text-shadow: 0 0 10px color-mix(in oklch, var(--primary) 35%, transparent); }
+    50% { text-shadow: 0 0 20px color-mix(in oklch, var(--primary) 60%, transparent); }
   }
 </style>
 

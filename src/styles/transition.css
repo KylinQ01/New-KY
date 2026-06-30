@@ -110,7 +110,7 @@ html.is-animating .transition-swup-fade {
    -------------------------------------------------------------------------- */
 
 #progress-bar {
-    --progress-height: 4px;
+    --progress-height: 5px;
     --progress-duration: 6s;
 
     position: fixed;
@@ -122,14 +122,14 @@ html.is-animating .transition-swup-fade {
     pointer-events: none;
     background: linear-gradient(
         90deg,
-        color-mix(in oklch, var(--primary) 80%, #ff6b6b) 0%,
+        color-mix(in oklch, var(--primary) 85%, #ff6b6b) 0%,
         var(--primary) 50%,
-        color-mix(in oklch, var(--primary) 80%, #4ecdc4) 100%
+        color-mix(in oklch, var(--primary) 85%, #4ecdc4) 100%
     );
     box-shadow:
-        0 0 12px color-mix(in oklch, var(--primary) 60%, transparent),
-        0 0 24px color-mix(in oklch, var(--primary) 40%, transparent),
-        0 0 40px color-mix(in oklch, var(--primary) 25%, transparent);
+        0 0 15px color-mix(in oklch, var(--primary) 65%, transparent),
+        0 0 30px color-mix(in oklch, var(--primary) 45%, transparent),
+        0 0 50px color-mix(in oklch, var(--primary) 30%, transparent);
     opacity: 0;
     border-radius: 0 3px 3px 0;
 }

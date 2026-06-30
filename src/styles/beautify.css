@@ -3,24 +3,24 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. 鼠标光晕跟随效果（增强版）
+   1. 鼠标光晕跟随效果（电影化增强版）
    -------------------------------------------------------------------------- */
 .cursor-glow {
   position: fixed;
-  width: 600px;
-  height: 600px;
+  width: 700px;
+  height: 700px;
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
   background: radial-gradient(circle,
-    color-mix(in oklch, var(--primary) 90%, white) 0%,
-    color-mix(in oklch, var(--primary) 60%, transparent) 30%,
-    color-mix(in oklch, var(--primary) 30%, transparent) 50%,
-    transparent 75%
+    color-mix(in oklch, var(--primary) 95%, white) 0%,
+    color-mix(in oklch, var(--primary) 65%, transparent) 25%,
+    color-mix(in oklch, var(--primary) 35%, transparent) 45%,
+    transparent 70%
   );
-  filter: blur(80px);
+  filter: blur(100px);
   transform: translate(-50%, -50%);
   mix-blend-mode: screen;
 }
@@ -31,20 +31,20 @@
 }
 
 .cursor-glow.active {
-  opacity: 0.22;
+  opacity: 0.28;
 }
 
 :root.dark .cursor-glow.active {
-  opacity: 0.18;
+  opacity: 0.22;
 }
 
 /* 暗色模式下调整光晕颜色 */
 :root.dark .cursor-glow {
   background: radial-gradient(circle,
-    color-mix(in oklch, var(--primary) 85%, white) 0%,
-    color-mix(in oklch, var(--primary) 55%, transparent) 30%,
-    color-mix(in oklch, var(--primary) 25%, transparent) 50%,
-    transparent 75%
+    color-mix(in oklch, var(--primary) 90%, white) 0%,
+    color-mix(in oklch, var(--primary) 60%, transparent) 25%,
+    color-mix(in oklch, var(--primary) 30%, transparent) 45%,
+    transparent 70%
   );
 }
 
@@ -76,7 +76,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   3. 点击涟漪效果（增强版）
+   3. 点击涟漪效果（电影化增强版）
    -------------------------------------------------------------------------- */
 .ripple-effect {
   position: fixed;
@@ -84,29 +84,29 @@
   pointer-events: none;
   z-index: 9999;
   background: radial-gradient(circle,
-    color-mix(in oklch, var(--primary) 90%, white) 0%,
-    color-mix(in oklch, var(--primary) 60%, transparent) 40%,
-    transparent 75%
+    color-mix(in oklch, var(--primary) 95%, white) 0%,
+    color-mix(in oklch, var(--primary) 65%, transparent) 35%,
+    transparent 70%
   );
   transform: translate(-50%, -50%) scale(0);
-  animation: ripple-expand 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  filter: blur(2px);
+  animation: ripple-expand 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  filter: blur(4px);
 }
 
 @keyframes ripple-expand {
   0% {
     width: 0;
     height: 0;
-    opacity: 0.6;
+    opacity: 0.7;
   }
   50% {
-    width: 250px;
-    height: 250px;
-    opacity: 0.3;
+    width: 300px;
+    height: 300px;
+    opacity: 0.35;
   }
   100% {
-    width: 350px;
-    height: 350px;
+    width: 450px;
+    height: 450px;
     opacity: 0;
   }
 }
@@ -138,53 +138,53 @@
 }
 
 /* --------------------------------------------------------------------------
-   5. 浮动环境光球（增强版）
+   5. 浮动环境光球（电影化增强版）
    -------------------------------------------------------------------------- */
 .ambient-orb {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
   z-index: 0;
-  filter: blur(100px);
-  opacity: 0.4;
-  animation: ambient-float 20s ease-in-out infinite;
+  filter: blur(120px);
+  opacity: 0.45;
+  animation: ambient-float 25s ease-in-out infinite;
 }
 
 .ambient-orb:nth-child(1) {
-  width: 550px;
-  height: 550px;
-  top: -150px;
-  left: -150px;
+  width: 650px;
+  height: 650px;
+  top: -200px;
+  left: -200px;
   background: var(--primary);
   animation-delay: 0s;
 }
 
 .ambient-orb:nth-child(2) {
-  width: 450px;
-  height: 450px;
-  top: 40%;
-  right: -150px;
+  width: 550px;
+  height: 550px;
+  top: 35%;
+  right: -200px;
   background: color-mix(in oklch, var(--primary) 60%, #ff6b6b);
   animation-delay: -7s;
 }
 
 .ambient-orb:nth-child(3) {
-  width: 500px;
-  height: 500px;
-  bottom: -150px;
+  width: 600px;
+  height: 600px;
+  bottom: -200px;
   left: 30%;
   background: color-mix(in oklch, var(--primary) 50%, #4ecdc4);
   animation-delay: -14s;
 }
 
 .ambient-orb:nth-child(4) {
-  width: 400px;
-  height: 400px;
-  top: 20%;
-  left: 50%;
+  width: 500px;
+  height: 500px;
+  top: 15%;
+  left: 45%;
   background: color-mix(in oklch, var(--primary) 45%, #a8e6cf);
   animation-delay: -10s;
-  opacity: 0.3;
+  opacity: 0.35;
 }
 
 @keyframes ambient-float {
@@ -192,23 +192,23 @@
     transform: translate(0, 0) scale(1);
   }
   25% {
-    transform: translate(60px, -40px) scale(1.15);
+    transform: translate(80px, -50px) scale(1.2);
   }
   50% {
-    transform: translate(-40px, 60px) scale(0.85);
+    transform: translate(-50px, 80px) scale(0.8);
   }
   75% {
-    transform: translate(40px, 40px) scale(1.05);
+    transform: translate(50px, 50px) scale(1.1);
   }
 }
 
 /* 暗色模式下降低光球不透明度 */
 :root.dark .ambient-orb {
-  opacity: 0.2;
+  opacity: 0.25;
 }
 
 :root.dark .ambient-orb:nth-child(4) {
-  opacity: 0.15;
+  opacity: 0.2;
 }
 
 /* 仅在首页显示环境光球（可通过类控制） */

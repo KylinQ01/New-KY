@@ -52,18 +52,18 @@ html {
     scroll-behavior: smooth;
 }
 
-/* 页面顶部渐变高光效果（增强版） */
+/* 页面顶部渐变高光效果（电影化增强版） */
 .top-gradient-highlight {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 250px;
+    height: 300px;
     background:
-      radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 0%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--primary) 18%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 0%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
       linear-gradient(to bottom,
-        color-mix(in oklch, var(--primary) 8%, rgba(255, 255, 255, 0.6)) 0%,
+        color-mix(in oklch, var(--primary) 10%, rgba(255, 255, 255, 0.65)) 0%,
         rgba(255, 255, 255, 0.3) 30%,
         rgba(255, 255, 255, 0.1) 60%,
         rgba(255, 255, 255, 0.02) 80%,
@@ -77,10 +77,10 @@ html {
 /* 暗色主题下的渐变高光效果 */
 :root.dark .top-gradient-highlight {
     background:
-      radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--primary) 20%, transparent) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 0%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--primary) 22%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 0%, color-mix(in oklch, var(--primary) 18%, transparent) 0%, transparent 50%),
       linear-gradient(to bottom,
-        color-mix(in oklch, var(--primary) 10%, rgba(0, 0, 0, 0.6)) 0%,
+        color-mix(in oklch, var(--primary) 12%, rgba(0, 0, 0, 0.65)) 0%,
         rgba(0, 0, 0, 0.3) 30%,
         rgba(0, 0, 0, 0.1) 60%,
         rgba(0, 0, 0, 0.02) 80%,
@@ -606,11 +606,11 @@ html {
 }
 
 /* ============================================
-   美化效果 - 卡片悬浮动效（增强版）
+   美化效果 - 卡片悬浮动效（电影化增强版）
    ============================================ */
 .post-card-wrapper {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
 
@@ -632,7 +632,7 @@ html {
   -webkit-mask-composite: xor;
           mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
   pointer-events: none;
   animation: card-gradient-flow 4s ease-in-out infinite;
 }
@@ -647,17 +647,17 @@ html {
 }
 
 .post-card-wrapper:hover {
-  transform: translateY(-8px) scale(1.01);
+  transform: translateY(-10px) scale(1.015);
   box-shadow:
-    0 20px 60px -12px color-mix(in oklch, var(--primary) 35%, transparent),
-    0 8px 24px -8px rgba(0, 0, 0, 0.15);
+    0 25px 70px -15px color-mix(in oklch, var(--primary) 40%, transparent),
+    0 10px 30px -10px rgba(0, 0, 0, 0.18);
 }
 
 :root.dark .post-card-wrapper:hover {
-  transform: translateY(-8px) scale(1.01);
+  transform: translateY(-10px) scale(1.015);
   box-shadow:
-    0 20px 60px -12px color-mix(in oklch, var(--primary) 45%, transparent),
-    0 8px 24px -8px rgba(0, 0, 0, 0.5);
+    0 25px 70px -15px color-mix(in oklch, var(--primary) 50%, transparent),
+    0 10px 30px -10px rgba(0, 0, 0, 0.6);
 }
 
 /* 卡片封面图片悬浮缩放（增强） */
@@ -666,26 +666,29 @@ html {
 }
 
 .post-card-wrapper .cover-image-container img {
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .post-card-wrapper:hover .cover-image-container img {
-  transform: scale(1.08);
+  transform: scale(1.1);
 }
 
 /* ============================================
-   美化效果 - 滚动入场动画（增强版）
+   美化效果 - 滚动入场动画（电影化增强版）
    ============================================ */
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(30px) scale(0.96);
-  transition: opacity 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateY(40px) scale(0.94);
+  filter: blur(8px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-reveal.revealed {
   opacity: 1;
   transform: translateY(0) scale(1);
+  filter: blur(0);
 }
 
 /* 延迟动画 - 用于多个元素依次出现 */
@@ -694,9 +697,39 @@ html {
 .scroll-reveal.delay-3 { transition-delay: 0.24s; }
 .scroll-reveal.delay-4 { transition-delay: 0.32s; }
 .scroll-reveal.delay-5 { transition-delay: 0.40s; }
+.scroll-reveal.delay-6 { transition-delay: 0.48s; }
+.scroll-reveal.delay-7 { transition-delay: 0.56s; }
+.scroll-reveal.delay-8 { transition-delay: 0.64s; }
+
+/* 从左侧滑入 */
+.scroll-reveal.from-left {
+  transform: translateX(-60px) scale(0.94);
+}
+
+.scroll-reveal.from-left.revealed {
+  transform: translateX(0) scale(1);
+}
+
+/* 从右侧滑入 */
+.scroll-reveal.from-right {
+  transform: translateX(60px) scale(0.94);
+}
+
+.scroll-reveal.from-right.revealed {
+  transform: translateX(0) scale(1);
+}
+
+/* 缩放入场 */
+.scroll-reveal.zoom-in {
+  transform: scale(0.85);
+}
+
+.scroll-reveal.zoom-in.revealed {
+  transform: scale(1);
+}
 
 /* ============================================
-   美化效果 - 渐变边框光效（增强版）
+   美化效果 - 渐变边框光效（电影化增强版）
    ============================================ */
 .gradient-border {
   position: relative;
@@ -727,7 +760,7 @@ html {
           mask-composite: exclude;
   animation: gradient-rotate 3s linear infinite;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
   pointer-events: none;
 }
 
@@ -747,7 +780,7 @@ html {
   }
 }
 
-/* 卡片基础渐变边框（始终显示微弱光效 - 增强版） */
+/* 卡片基础渐变边框（始终显示微弱光效 - 电影化增强版） */
 .card-base {
   position: relative;
 }
@@ -761,9 +794,9 @@ html {
   background: linear-gradient(
     135deg,
     transparent 0%,
-    color-mix(in oklch, var(--primary) 25%, transparent) 30%,
-    color-mix(in oklch, var(--primary) 35%, transparent) 50%,
-    color-mix(in oklch, var(--primary) 25%, transparent) 70%,
+    color-mix(in oklch, var(--primary) 30%, transparent) 30%,
+    color-mix(in oklch, var(--primary) 40%, transparent) 50%,
+    color-mix(in oklch, var(--primary) 30%, transparent) 70%,
     transparent 100%
   );
   -webkit-mask:
@@ -772,16 +805,16 @@ html {
   -webkit-mask-composite: xor;
           mask-composite: exclude;
   pointer-events: none;
-  transition: opacity 0.3s ease;
-  opacity: 0.5;
+  transition: opacity 0.4s ease;
+  opacity: 0.6;
 }
 
 .card-base:hover::after {
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--primary) 40%, transparent) 0%,
-    color-mix(in oklch, var(--primary) 30%, transparent) 50%,
-    color-mix(in oklch, var(--primary) 40%, transparent) 100%
+    color-mix(in oklch, var(--primary) 45%, transparent) 0%,
+    color-mix(in oklch, var(--primary) 35%, transparent) 50%,
+    color-mix(in oklch, var(--primary) 45%, transparent) 100%
   );
   opacity: 1;
 }
