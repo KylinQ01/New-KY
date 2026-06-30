@@ -618,6 +618,237 @@
   }
 }
 
+/* --------------------------------------------------------------------------
+   26. 图片模糊加载效果
+   -------------------------------------------------------------------------- */
+.img-blur-load {
+  filter: blur(20px);
+  transform: scale(1.1);
+  transition: filter 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.img-blur-load.loaded {
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* --------------------------------------------------------------------------
+   27. 渐变标题文字（用于页面大标题）
+   -------------------------------------------------------------------------- */
+.gradient-heading {
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 70%, #ff6b6b) 40%,
+    color-mix(in oklch, var(--primary) 60%, #4ecdc4) 70%,
+    var(--primary) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: heading-shimmer 6s ease infinite;
+}
+
+@keyframes heading-shimmer {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+/* --------------------------------------------------------------------------
+   28. 隆起卡片效果 - 按压动画
+   -------------------------------------------------------------------------- */
+.card-press {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-press:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px -6px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+.card-press:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* --------------------------------------------------------------------------
+   29. 链接底部悬浮高亮条
+   -------------------------------------------------------------------------- */
+.link-bar {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-bar::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 1px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.link-bar:hover::after {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   30. 置顶徽章脉冲
+   -------------------------------------------------------------------------- */
+.pinned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in oklch, var(--primary) 40%, transparent);
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 2px 8px color-mix(in oklch, var(--primary) 30%, transparent); }
+  50% { box-shadow: 0 2px 16px color-mix(in oklch, var(--primary) 50%, transparent); }
+}
+
+/* --------------------------------------------------------------------------
+   31. 分类标签圆角药丸
+   -------------------------------------------------------------------------- */
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: color-mix(in oklch, var(--primary) 12%, transparent);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklch, var(--primary) 20%, transparent);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-pill:hover {
+  background: color-mix(in oklch, var(--primary) 20%, transparent);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   32. 标签云样式增强
+   -------------------------------------------------------------------------- */
+.tag-cloud-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: color-mix(in oklch, var(--btn-regular-bg) 60%, transparent);
+  color: var(--btn-content);
+  border: 1px solid transparent;
+}
+
+.tag-cloud-item:hover {
+  background: color-mix(in oklch, var(--primary) 15%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in oklch, var(--primary) 25%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--primary) 15%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   33. 代码块复制按钮美化
+   -------------------------------------------------------------------------- */
+.copy-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+}
+
+.code-block-wrapper:hover .copy-button {
+  opacity: 1;
+}
+
+.copy-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.copy-button.copied {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   34. 全局焦点环（无障碍）
+   -------------------------------------------------------------------------- */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   35. 选中文本颜色
+   -------------------------------------------------------------------------- */
+::selection {
+  background: color-mix(in oklch, var(--primary) 40%, transparent);
+  color: inherit;
+}
+
+/* --------------------------------------------------------------------------
+   36. 分隔线装饰
+   -------------------------------------------------------------------------- */
+.divider-gradient {
+  height: 1px;
+  border: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--primary) 20%, var(--line-color)) 30%,
+    color-mix(in oklch, var(--primary) 30%, var(--line-color)) 50%,
+    color-mix(in oklch, var(--primary) 20%, var(--line-color)) 70%,
+    transparent 100%
+  );
+  margin: 2rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   37. 文章内容图片美化
+   -------------------------------------------------------------------------- */
+.custom-md img {
+  border-radius: 0.75rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-md img:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+:root.dark .custom-md img:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
 /* ==========================================================================
    响应式调整
    ========================================================================== */

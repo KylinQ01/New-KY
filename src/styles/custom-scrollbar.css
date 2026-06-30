@@ -1,11 +1,15 @@
+/* ==========================================================================
+   主题色自定义滚动条
+   ========================================================================== */
+
 /* 通用自定义滚动条样式 */
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-color: color-mix(in oklch, var(--primary) 35%, transparent) transparent;
 }
 
 .dark .custom-scrollbar {
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -18,32 +22,76 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--primary) 25%, transparent) 0%,
+        color-mix(in oklch, var(--primary) 40%, transparent) 50%,
+        color-mix(in oklch, var(--primary) 25%, transparent) 100%
+    );
     border-radius: 3px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid color-mix(in oklch, var(--primary) 10%, transparent);
     transition: all 0.2s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--primary) 35%, transparent) 0%,
+        color-mix(in oklch, var(--primary) 55%, transparent) 100%
+    );
+    border-color: color-mix(in oklch, var(--primary) 20%, transparent);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.4) 100%);
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--primary) 45%, transparent) 0%,
+        color-mix(in oklch, var(--primary) 65%, transparent) 100%
+    );
 }
 
-/* 暗色模式滚动条 - Webkit */
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.2) 100%);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+/* 全局滚动条 — 页面主滚动条也跟随主题 */
+:root {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--primary) 30%, transparent) transparent;
 }
 
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.3) 100%);
-    border-color: rgba(0, 0, 0, 0.2);
+:root.dark {
+    scrollbar-color: color-mix(in oklch, var(--primary) 35%, transparent) transparent;
 }
 
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:active {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.4) 100%);
+:root::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+:root::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+:root::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--primary) 20%, transparent) 0%,
+        color-mix(in oklch, var(--primary) 35%, transparent) 100%
+    );
+    border-radius: 3px;
+    border: 1px solid color-mix(in oklch, var(--primary) 8%, transparent);
+    transition: all 0.2s ease;
+}
+
+:root::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--primary) 30%, transparent) 0%,
+        color-mix(in oklch, var(--primary) 50%, transparent) 100%
+    );
+}
+
+:root::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--primary) 40%, transparent) 0%,
+        color-mix(in oklch, var(--primary) 60%, transparent) 100%
+    );
 }

@@ -24,51 +24,59 @@ if (footerConfig.enable) {
 ---
 
 
-<div
-  class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"
->
-</div>
+<!-- 渐变分割线 -->
+<hr class="divider-gradient !mx-8 md:!mx-32" />
 
 <div
-  class="transition border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6"
+  class="transition rounded-2xl mb-12 mx-4 md:mx-32 px-6 py-8 flex flex-col items-center justify-center
+    bg-(--card-bg) shadow-(--shadow-sm)"
 >
-  <div class="transition text-50 text-sm text-center wrap">
-    <div class="mb-2">
-      {customFooterHtml && <div set:html={customFooterHtml} />}
-    </div>
-    <div class="m-0.5 flex gap-2 justify-center flex-wrap">
+  <div class="transition text-50 text-sm text-center wrap max-w-2xl">
+    {customFooterHtml && (
+      <div class="mb-4 pb-4 border-b border-(--line-divider) text-(--content-meta) leading-relaxed" set:html={customFooterHtml} />
+    )}
+
+    <!-- 版权与链接 -->
+    <div class="flex gap-2 justify-center flex-wrap items-center">
       &copy; <span id="copyright-year">{currentYear}</span>
-      {profileConfig.name}. All Rights Reserved.
-      <span aria-hidden="true">/</span>
+      <span class="font-semibold text-(--primary)">{profileConfig.name}</span>
+      <span class="text-(--content-meta)">· All Rights Reserved ·</span>
       <a
-        class="transition link text-(--primary) font-medium"
+        class="transition link text-(--primary) font-medium hover:underline"
         target="_blank"
         href={url("rss.xml")}>RSS</a
       >
-      <span aria-hidden="true">/</span>
+      <span class="text-(--line-color)" aria-hidden="true">/</span>
       <a
-        class="transition link text-(--primary) font-medium"
+        class="transition link text-(--primary) font-medium hover:underline"
         target="_blank"
         href={url("sitemap-index.xml")}>Sitemap</a
       >
     </div>
-    <div class="m-0.5 flex gap-2 justify-center flex-wrap">
+
+    <!-- 驱动信息 -->
+    <div class="mt-3 flex gap-2 justify-center flex-wrap text-(--content-meta) text-xs">
       <span>Powered by</span>
       <a
-        class="transition link text-(--primary) font-medium"
+        class="transition link text-(--primary) font-medium hover:underline"
         target="_blank"
         href="https://astro.build">Astro</a
       >
       <span aria-hidden="true">&</span>
       <a
-        class="transition link text-(--primary) font-medium"
+        class="transition link text-(--primary) font-medium hover:underline"
         target="_blank"
         href="https://github.com/CuteLeaf/Firefly">Firefly</a
       >
+      <span class="text-(--line-color) px-1">|</span>
+      <span>Theme</span>
+      <span class="text-(--primary)/70 font-medium">Firefly</span>
     </div>
-    <div id="visitor-counter" class="m-0.5 flex gap-2 justify-center flex-wrap text-xs text-neutral-400 dark:text-neutral-500">
-      <span>您是第</span>
-      <span id="busuanzi_value_site_uv" style="font-weight:600;color:var(--primary)">--</span>
+
+    <!-- 访客计数 -->
+    <div id="visitor-counter" class="mt-4 flex gap-1.5 justify-center flex-wrap text-xs text-neutral-400 dark:text-neutral-500">
+      <span>👋 您是第</span>
+      <span id="busuanzi_value_site_uv" class="font-bold text-(--primary)" style="font-size:1.1em">--</span>
       <span>位来访者</span>
     </div>
   </div>

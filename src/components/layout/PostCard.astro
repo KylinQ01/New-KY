@@ -70,7 +70,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
     "post-card-wrapper",
     hasCover ? "has-cover" : "no-cover",
     pinned ? "pinned" : "",
-    "card-base flex flex-col-reverse w-full rounded-(--radius-large) overflow-hidden relative",
+    "card-base card-press flex flex-col-reverse w-full rounded-(--radius-large) overflow-hidden relative",
     className,
   ]}
   style={style}
@@ -94,7 +94,11 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
         before:w-1 before:h-5 before:rounded-md before:bg-(--primary)
         before:absolute before:top-[35px] before:left-[18px] before:hidden md:before:block"
     >
-      {title}
+      {pinned ? (
+        <span class="gradient-heading">{title}</span>
+      ) : (
+        title
+      )}
 
       {
         password && (
