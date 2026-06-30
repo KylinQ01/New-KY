@@ -637,6 +637,18 @@ const managerConfigStr = JSON.stringify({
         try {
             if (config.mode === 'api' && config.api) {
                 await initApi();
+                // API mode: always emit fm:init to close loading spinner
+                state.initialized = true;
+                emit('fm:init', {
+                    playlist: state.playlist,
+                    playMode: state.playMode,
+                    volume: state.volume,
+                    isMuted: state.isMuted
+                });
+                if (state.playlist.length === 0 && !apiState.isLoggedIn) {
+                    // Not logged in, show login prompt
+                    emit('fm:api-status', { isLoggedIn: false });
+                }
             } else if (config.mode === 'meting' && config.meting) {
                 await fetchMetingData();
             } else if (config.mode === 'local') {
