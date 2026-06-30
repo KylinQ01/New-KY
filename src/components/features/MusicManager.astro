@@ -332,6 +332,20 @@ const managerConfigStr = JSON.stringify({
         localStorage.setItem('music-api-cookies', JSON.stringify(apiState.cookieJar));
 
         emit('fm:login', { success: true });
+
+        // Auto-load playlists and first playlist after login (non-blocking)
+        (async function () {
+            try {
+                await apiGetPlaylists();
+                if (apiState.playlists.length > 0) {
+                    await fetchApiPlaylist(apiState.playlists[0].id);
+                }
+                emit('fm:api-status', { isLoggedIn: true, playlists: apiState.playlists });
+            } catch (e) {
+                console.warn('Failed to load playlists after login:', e);
+            }
+        })();
+
         return data;
     }
 
