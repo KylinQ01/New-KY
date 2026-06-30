@@ -8,7 +8,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 	showLyrics: true,
 
 	api: {
-		endpoint: "/api",
+		endpoint: "/music-api",
 		quality: "high",
 	},
 
