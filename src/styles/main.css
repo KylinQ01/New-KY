@@ -52,14 +52,23 @@ html {
     scroll-behavior: smooth;
 }
 
-/* 页面顶部渐变高光效果 */
+/* 页面顶部渐变高光效果（增强版） */
 .top-gradient-highlight {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 180px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.15) 60%, rgba(255, 255, 255, 0.05) 80%, transparent 100%);
+    height: 250px;
+    background:
+      radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 0%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 50%),
+      linear-gradient(to bottom,
+        color-mix(in oklch, var(--primary) 8%, rgba(255, 255, 255, 0.6)) 0%,
+        rgba(255, 255, 255, 0.3) 30%,
+        rgba(255, 255, 255, 0.1) 60%,
+        rgba(255, 255, 255, 0.02) 80%,
+        transparent 100%
+      );
     pointer-events: none;
     z-index: 20;
     transition: all var(--duration-medium) var(--ease-standard);
@@ -67,7 +76,16 @@ html {
 
 /* 暗色主题下的渐变高光效果 */
 :root.dark .top-gradient-highlight {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.15) 60%, rgba(0, 0, 0, 0.05) 80%, transparent 100%);
+    background:
+      radial-gradient(ellipse at 30% 0%, color-mix(in oklch, var(--primary) 20%, transparent) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 0%, color-mix(in oklch, var(--primary) 15%, transparent) 0%, transparent 50%),
+      linear-gradient(to bottom,
+        color-mix(in oklch, var(--primary) 10%, rgba(0, 0, 0, 0.6)) 0%,
+        rgba(0, 0, 0, 0.3) 30%,
+        rgba(0, 0, 0, 0.1) 60%,
+        rgba(0, 0, 0, 0.02) 80%,
+        transparent 100%
+      );
 }
 
 @layer components {
@@ -588,61 +606,97 @@ html {
 }
 
 /* ============================================
-   美化效果 - 卡片悬浮动效
+   美化效果 - 卡片悬浮动效（增强版）
    ============================================ */
 .post-card-wrapper {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.post-card-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(135deg,
+    color-mix(in oklch, var(--primary) 80%, #ff6b6b) 0%,
+    color-mix(in oklch, var(--primary) 60%, #4ecdc4) 50%,
+    color-mix(in oklch, var(--primary) 80%, #a8e6cf) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  animation: card-gradient-flow 4s ease-in-out infinite;
+}
+
+@keyframes card-gradient-flow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.post-card-wrapper:hover::before {
+  opacity: 1;
 }
 
 .post-card-wrapper:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.12),
-              0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow:
+    0 20px 60px -12px color-mix(in oklch, var(--primary) 35%, transparent),
+    0 8px 24px -8px rgba(0, 0, 0, 0.15);
 }
 
 :root.dark .post-card-wrapper:hover {
-  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.4),
-              0 4px 16px -4px rgba(0, 0, 0, 0.3);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow:
+    0 20px 60px -12px color-mix(in oklch, var(--primary) 45%, transparent),
+    0 8px 24px -8px rgba(0, 0, 0, 0.5);
 }
 
-/* 卡片封面图片悬浮缩放 */
+/* 卡片封面图片悬浮缩放（增强） */
 .post-card-wrapper .cover-image-container {
   overflow: hidden;
 }
 
 .post-card-wrapper .cover-image-container img {
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .post-card-wrapper:hover .cover-image-container img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 /* ============================================
-   美化效果 - 滚动入场动画
+   美化效果 - 滚动入场动画（增强版）
    ============================================ */
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(30px) scale(0.96);
+  transition: opacity 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .scroll-reveal.revealed {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 /* 延迟动画 - 用于多个元素依次出现 */
-.scroll-reveal.delay-1 { transition-delay: 0.1s; }
-.scroll-reveal.delay-2 { transition-delay: 0.2s; }
-.scroll-reveal.delay-3 { transition-delay: 0.3s; }
-.scroll-reveal.delay-4 { transition-delay: 0.4s; }
-.scroll-reveal.delay-5 { transition-delay: 0.5s; }
+.scroll-reveal.delay-1 { transition-delay: 0.08s; }
+.scroll-reveal.delay-2 { transition-delay: 0.16s; }
+.scroll-reveal.delay-3 { transition-delay: 0.24s; }
+.scroll-reveal.delay-4 { transition-delay: 0.32s; }
+.scroll-reveal.delay-5 { transition-delay: 0.40s; }
 
 /* ============================================
-   美化效果 - 渐变边框光效
+   美化效果 - 渐变边框光效（增强版）
    ============================================ */
 .gradient-border {
   position: relative;
@@ -655,15 +709,15 @@ html {
   content: '';
   position: absolute;
   inset: 0;
-  padding: 1px;
+  padding: 2px;
   border-radius: inherit;
   background: linear-gradient(
     135deg,
     var(--primary) 0%,
-    var(--primary-light) 25%,
-    var(--primary-dark) 50%,
-    var(--primary) 75%,
-    var(--primary-light) 100%
+    color-mix(in oklch, var(--primary) 80%, #ff6b6b) 25%,
+    color-mix(in oklch, var(--primary) 60%, #4ecdc4) 50%,
+    color-mix(in oklch, var(--primary) 80%, #a8e6cf) 75%,
+    var(--primary) 100%
   );
   background-size: 200% 200%;
   -webkit-mask:
@@ -671,9 +725,9 @@ html {
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-  animation: gradient-rotate 4s linear infinite;
+  animation: gradient-rotate 3s linear infinite;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
 }
 
@@ -693,7 +747,7 @@ html {
   }
 }
 
-/* 卡片基础渐变边框（始终显示微弱光效） */
+/* 卡片基础渐变边框（始终显示微弱光效 - 增强版） */
 .card-base {
   position: relative;
 }
@@ -707,7 +761,9 @@ html {
   background: linear-gradient(
     135deg,
     transparent 0%,
-    rgba(var(--primary-rgb), 0.1) 50%,
+    color-mix(in oklch, var(--primary) 25%, transparent) 30%,
+    color-mix(in oklch, var(--primary) 35%, transparent) 50%,
+    color-mix(in oklch, var(--primary) 25%, transparent) 70%,
     transparent 100%
   );
   -webkit-mask:
@@ -717,15 +773,17 @@ html {
           mask-composite: exclude;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  opacity: 0.5;
 }
 
 .card-base:hover::after {
   background: linear-gradient(
     135deg,
-    rgba(var(--primary-rgb), 0.2) 0%,
-    rgba(var(--primary-rgb), 0.1) 50%,
-    rgba(var(--primary-rgb), 0.2) 100%
+    color-mix(in oklch, var(--primary) 40%, transparent) 0%,
+    color-mix(in oklch, var(--primary) 30%, transparent) 50%,
+    color-mix(in oklch, var(--primary) 40%, transparent) 100%
   );
+  opacity: 1;
 }
 
 /* ============================================

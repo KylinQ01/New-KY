@@ -3,19 +3,24 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. 鼠标光晕跟随效果
+   1. 鼠标光晕跟随效果（增强版）
    -------------------------------------------------------------------------- */
 .cursor-glow {
   position: fixed;
-  width: 400px;
-  height: 400px;
+  width: 600px;
+  height: 600px;
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-  filter: blur(60px);
+  transition: opacity 0.4s ease;
+  background: radial-gradient(circle,
+    color-mix(in oklch, var(--primary) 90%, white) 0%,
+    color-mix(in oklch, var(--primary) 60%, transparent) 30%,
+    color-mix(in oklch, var(--primary) 30%, transparent) 50%,
+    transparent 75%
+  );
+  filter: blur(80px);
   transform: translate(-50%, -50%);
   mix-blend-mode: screen;
 }
@@ -26,16 +31,21 @@
 }
 
 .cursor-glow.active {
-  opacity: 0.15;
+  opacity: 0.22;
 }
 
 :root.dark .cursor-glow.active {
-  opacity: 0.1;
+  opacity: 0.18;
 }
 
 /* 暗色模式下调整光晕颜色 */
 :root.dark .cursor-glow {
-  background: radial-gradient(circle, color-mix(in oklch, var(--primary) 80%, white) 0%, transparent 70%);
+  background: radial-gradient(circle,
+    color-mix(in oklch, var(--primary) 85%, white) 0%,
+    color-mix(in oklch, var(--primary) 55%, transparent) 30%,
+    color-mix(in oklch, var(--primary) 25%, transparent) 50%,
+    transparent 75%
+  );
 }
 
 /* --------------------------------------------------------------------------
@@ -66,27 +76,37 @@
 }
 
 /* --------------------------------------------------------------------------
-   3. 点击涟漪效果
+   3. 点击涟漪效果（增强版）
    -------------------------------------------------------------------------- */
 .ripple-effect {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
-  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  background: radial-gradient(circle,
+    color-mix(in oklch, var(--primary) 90%, white) 0%,
+    color-mix(in oklch, var(--primary) 60%, transparent) 40%,
+    transparent 75%
+  );
   transform: translate(-50%, -50%) scale(0);
-  animation: ripple-expand 0.6s ease-out forwards;
+  animation: ripple-expand 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  filter: blur(2px);
 }
 
 @keyframes ripple-expand {
   0% {
     width: 0;
     height: 0;
-    opacity: 0.5;
+    opacity: 0.6;
+  }
+  50% {
+    width: 250px;
+    height: 250px;
+    opacity: 0.3;
   }
   100% {
-    width: 200px;
-    height: 200px;
+    width: 350px;
+    height: 350px;
     opacity: 0;
   }
 }
@@ -118,43 +138,53 @@
 }
 
 /* --------------------------------------------------------------------------
-   5. 浮动环境光球
+   5. 浮动环境光球（增强版）
    -------------------------------------------------------------------------- */
 .ambient-orb {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
   z-index: 0;
-  filter: blur(80px);
-  opacity: 0.3;
+  filter: blur(100px);
+  opacity: 0.4;
   animation: ambient-float 20s ease-in-out infinite;
 }
 
 .ambient-orb:nth-child(1) {
-  width: 400px;
-  height: 400px;
-  top: -100px;
-  left: -100px;
+  width: 550px;
+  height: 550px;
+  top: -150px;
+  left: -150px;
   background: var(--primary);
   animation-delay: 0s;
 }
 
 .ambient-orb:nth-child(2) {
-  width: 300px;
-  height: 300px;
-  top: 50%;
-  right: -100px;
+  width: 450px;
+  height: 450px;
+  top: 40%;
+  right: -150px;
   background: color-mix(in oklch, var(--primary) 60%, #ff6b6b);
   animation-delay: -7s;
 }
 
 .ambient-orb:nth-child(3) {
-  width: 350px;
-  height: 350px;
-  bottom: -100px;
+  width: 500px;
+  height: 500px;
+  bottom: -150px;
   left: 30%;
   background: color-mix(in oklch, var(--primary) 50%, #4ecdc4);
   animation-delay: -14s;
+}
+
+.ambient-orb:nth-child(4) {
+  width: 400px;
+  height: 400px;
+  top: 20%;
+  left: 50%;
+  background: color-mix(in oklch, var(--primary) 45%, #a8e6cf);
+  animation-delay: -10s;
+  opacity: 0.3;
 }
 
 @keyframes ambient-float {
@@ -162,18 +192,22 @@
     transform: translate(0, 0) scale(1);
   }
   25% {
-    transform: translate(50px, -30px) scale(1.1);
+    transform: translate(60px, -40px) scale(1.15);
   }
   50% {
-    transform: translate(-30px, 50px) scale(0.9);
+    transform: translate(-40px, 60px) scale(0.85);
   }
   75% {
-    transform: translate(30px, 30px) scale(1.05);
+    transform: translate(40px, 40px) scale(1.05);
   }
 }
 
 /* 暗色模式下降低光球不透明度 */
 :root.dark .ambient-orb {
+  opacity: 0.2;
+}
+
+:root.dark .ambient-orb:nth-child(4) {
   opacity: 0.15;
 }
 
