@@ -31,7 +31,6 @@ const localPlaylist =
 const managerConfigStr = JSON.stringify({
 	mode: config.mode,
 	meting: config.meting,
-	api: config.api,
 	localPlaylist: localPlaylist,
 	volume: config.volume ?? 0.7,
 	playMode: config.playMode ?? "list",
@@ -53,14 +52,6 @@ const managerConfigStr = JSON.stringify({
 		pause: i18n(I18nKey.musicPause),
 		progress: i18n(I18nKey.musicProgress),
 		noCover: i18n(I18nKey.musicNoCover),
-		login: i18n(I18nKey.musicLogin),
-		logout: i18n(I18nKey.musicLogout),
-		loginSuccess: i18n(I18nKey.musicLoginSuccess),
-		loginFailed: i18n(I18nKey.musicLoginFailed),
-		loadingPlaylists: i18n(I18nKey.musicLoadingPlaylists),
-		noPlaylists: i18n(I18nKey.musicNoPlaylists),
-		phone: i18n(I18nKey.musicPhone),
-		password: i18n(I18nKey.musicPassword),
 	},
 });
 ---
@@ -71,124 +62,6 @@ const managerConfigStr = JSON.stringify({
     if (window.__fireflyMusic) return;
 
     var config = JSON.parse(managerConfigStr);
-
-    // ── MD5 (compact browser-compatible implementation) ──────────
-    function md5(str) {
-        function md5cycle(x, k) {
-            var a = x[0], b = x[1], c = x[2], d = x[3];
-            a = md5ff(a, b, c, d, k[0], 7, -680876936);
-            d = md5ff(d, a, b, c, k[1], 12, -389564586);
-            c = md5ff(c, d, a, b, k[2], 17, 606105944);
-            b = md5ff(b, c, d, a, k[3], 22, -1044525330);
-            a = md5ff(a, b, c, d, k[4], 7, -176418897);
-            d = md5ff(d, a, b, c, k[5], 12, 1200080426);
-            c = md5ff(c, d, a, b, k[6], 17, -1473231341);
-            b = md5ff(b, c, d, a, k[7], 22, -45705983);
-            a = md5ff(a, b, c, d, k[8], 7, 1770035416);
-            d = md5ff(d, a, b, c, k[9], 12, -1958414417);
-            c = md5ff(c, d, a, b, k[10], 17, -42063);
-            b = md5ff(b, c, d, a, k[11], 22, -1990404162);
-            a = md5ff(a, b, c, d, k[12], 7, 1804603682);
-            d = md5ff(d, a, b, c, k[13], 12, -40341101);
-            c = md5ff(c, d, a, b, k[14], 17, -1502002290);
-            b = md5ff(b, c, d, a, k[15], 22, 1236535329);
-            a = md5gg(a, b, c, d, k[1], 5, -165796510);
-            d = md5gg(d, a, b, c, k[6], 9, -1069501632);
-            c = md5gg(c, d, a, b, k[11], 14, 643717713);
-            b = md5gg(b, c, d, a, k[0], 20, -373897302);
-            a = md5gg(a, b, c, d, k[5], 5, -701558691);
-            d = md5gg(d, a, b, c, k[10], 9, 38016083);
-            c = md5gg(c, d, a, b, k[15], 14, -660478335);
-            b = md5gg(b, c, d, a, k[4], 20, -405537848);
-            a = md5gg(a, b, c, d, k[9], 5, 568446438);
-            d = md5gg(d, a, b, c, k[14], 9, -1019803690);
-            c = md5gg(c, d, a, b, k[3], 14, -187363961);
-            b = md5gg(b, c, d, a, k[8], 20, 1163531501);
-            a = md5gg(a, b, c, d, k[13], 5, -1444681467);
-            d = md5gg(d, a, b, c, k[2], 9, -51403784);
-            c = md5gg(c, d, a, b, k[7], 14, 1735328473);
-            b = md5gg(b, c, d, a, k[12], 20, -1926607734);
-            a = md5hh(a, b, c, d, k[5], 4, -378558);
-            d = md5hh(d, a, b, c, k[8], 11, -2022574463);
-            c = md5hh(c, d, a, b, k[11], 16, 1839030562);
-            b = md5hh(b, c, d, a, k[14], 23, -35309556);
-            a = md5hh(a, b, c, d, k[1], 4, -1530992060);
-            d = md5hh(d, a, b, c, k[4], 11, 1272893353);
-            c = md5hh(c, d, a, b, k[7], 16, -155497632);
-            b = md5hh(b, c, d, a, k[10], 23, -1094730640);
-            a = md5hh(a, b, c, d, k[13], 4, 681279174);
-            d = md5hh(d, a, b, c, k[0], 11, -358537222);
-            c = md5hh(c, d, a, b, k[3], 16, -722521979);
-            b = md5hh(b, c, d, a, k[6], 23, 76029189);
-            a = md5hh(a, b, c, d, k[9], 4, -640364487);
-            d = md5hh(d, a, b, c, k[12], 11, -421815835);
-            c = md5hh(c, d, a, b, k[15], 16, 530742520);
-            b = md5hh(b, c, d, a, k[2], 23, -995338651);
-            a = md5ii(a, b, c, d, k[0], 6, -198630844);
-            d = md5ii(d, a, b, c, k[7], 10, 1126891415);
-            c = md5ii(c, d, a, b, k[14], 15, -1416354905);
-            b = md5ii(b, c, d, a, k[5], 21, -57434055);
-            a = md5ii(a, b, c, d, k[12], 6, 1700485571);
-            d = md5ii(d, a, b, c, k[3], 10, -1894986606);
-            c = md5ii(c, d, a, b, k[10], 15, -1051523);
-            b = md5ii(b, c, d, a, k[1], 21, -2054922799);
-            a = md5ii(a, b, c, d, k[8], 6, 1873313359);
-            d = md5ii(d, a, b, c, k[15], 10, -30611744);
-            c = md5ii(c, d, a, b, k[6], 15, -1560198380);
-            b = md5ii(b, c, d, a, k[13], 21, 1309151649);
-            a = md5ii(a, b, c, d, k[4], 6, -145523070);
-            d = md5ii(d, a, b, c, k[11], 10, -1120210379);
-            c = md5ii(c, d, a, b, k[2], 15, 718787259);
-            b = md5ii(b, c, d, a, k[9], 21, -343485551);
-            x[0] = add32(a, x[0]);
-            x[1] = add32(b, x[1]);
-            x[2] = add32(c, x[2]);
-            x[3] = add32(d, x[3]);
-        }
-        function md5cmn(q, a, b, x, s, t) {
-            return add32(bit_rol(add32(add32(a, q), add32(x, t)), s), b);
-        }
-        function md5ff(a, b, c, d, x, s, t) {
-            return md5cmn((b & c) | ((~b) & d), a, b, x, s, t);
-        }
-        function md5gg(a, b, c, d, x, s, t) {
-            return md5cmn((b & d) | (c & (~d)), a, b, x, s, t);
-        }
-        function md5hh(a, b, c, d, x, s, t) {
-            return md5cmn(b ^ c ^ d, a, b, x, s, t);
-        }
-        function md5ii(a, b, c, d, x, s, t) {
-            return md5cmn(c ^ (b | (~d)), a, b, x, s, t);
-        }
-        function add32(a, b) {
-            return (a + b) & 0xFFFFFFFF;
-        }
-        function bit_rol(num, cnt) {
-            return (num << cnt) | (num >>> (32 - cnt));
-        }
-        function hex(x) {
-            for (var i = 0; i < x.length; i++) {
-                x[i] = ('00000000' + x[i].toString(16)).slice(-8);
-            }
-            return x.join('');
-        }
-        function core_md5(s) {
-            var nblk = [], i;
-            var m = (s.length + 8) >> 6;
-            nblk = new Array(16 * (m + 1));
-            for (i = 0; i < 16 * (m + 1); i++) nblk[i] = 0;
-            for (i = 0; i < s.length; i++)
-                nblk[i >> 2] |= s.charCodeAt(i) << ((i % 4) * 8);
-            nblk[i >> 2] |= 0x80 << ((i % 4) * 8);
-            nblk[16 * m + 14] = s.length * 8;
-            var x = [1732584193, -271733879, -1732584194, 271733878];
-            for (i = 0; i < nblk.length; i += 16) {
-                md5cycle(x, nblk.slice(i, i + 16));
-            }
-            return x;
-        }
-        return hex(core_md5(str));
-    }
 
     // ── Helpers ──────────────────────────────────────────────
     function formatTime(seconds) {
@@ -250,294 +123,9 @@ const managerConfigStr = JSON.stringify({
     else if (config.playMode === 'one') state.playMode = 1;
     else state.playMode = 0;
 
-    // ── API State ────────────────────────────────────────────
-    var apiState = {
-        isLoggedIn: false,
-        cookieJar: {},
-        playlists: [],
-        currentPlaylistId: null
-    };
-
-    // Quality to bitrate mapping
-    var QUALITY_MAP = {
-        'standard': 128000,
-        'high': 320000,
-        'lossless': 999000,
-        'hires': 2000000
-    };
-
     // ── Event helpers ────────────────────────────────────────
     function emit(name, detail) {
         window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
-    }
-
-    // ── API Helpers ──────────────────────────────────────────
-    function getApiUrl(path) {
-        var base = (config.api && config.api.endpoint) || '';
-        if (!base) return '';
-        if (!base.endsWith('/')) base += '/';
-        return base + path;
-    }
-
-    function getCookieHeader() {
-        var cookies = [];
-        for (var key in apiState.cookieJar) {
-            if (apiState.cookieJar.hasOwnProperty(key)) {
-                cookies.push(key + '=' + apiState.cookieJar[key]);
-            }
-        }
-        return cookies.join('; ');
-    }
-
-    function parseCookies(header) {
-        if (!header) return {};
-        var cookies = {};
-        header.split(';').forEach(function (pair) {
-            var parts = pair.split('=');
-            if (parts.length >= 2) {
-                var key = parts[0].trim();
-                var value = parts.slice(1).join('=').trim();
-                cookies[key] = value;
-            }
-        });
-        return cookies;
-    }
-
-    // ── API Login ────────────────────────────────────────────
-    async function apiLogin(phone, password) {
-        var loginUrl = getApiUrl('login/cellphone');
-        if (!loginUrl) throw new Error('API endpoint not configured');
-
-        var headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-        var body = 'phone=' + encodeURIComponent(phone) + '&password=' + encodeURIComponent(md5(password));
-
-        var res = await fetch(loginUrl, {
-            method: 'POST',
-            headers: headers,
-            body: body
-        });
-
-        if (!res.ok) throw new Error('Login failed: HTTP ' + res.status);
-
-        var data = await res.json();
-        if (data.code !== 200) throw new Error('Login failed: ' + (data.message || 'unknown error'));
-
-        // Extract cookies from response
-        var setCookie = res.headers.get('set-cookie');
-        if (setCookie) {
-            apiState.cookieJar = Object.assign(apiState.cookieJar, parseCookies(setCookie));
-        }
-
-        apiState.isLoggedIn = true;
-        localStorage.setItem('music-api-cookies', JSON.stringify(apiState.cookieJar));
-
-        emit('fm:login', { success: true });
-
-        // Auto-load playlists and first playlist after login (non-blocking)
-        (async function () {
-            try {
-                await apiGetPlaylists();
-                if (apiState.playlists.length > 0) {
-                    await fetchApiPlaylist(apiState.playlists[0].id);
-                }
-                emit('fm:api-status', { isLoggedIn: true, playlists: apiState.playlists });
-            } catch (e) {
-                console.warn('Failed to load playlists after login:', e);
-            }
-        })();
-
-        return data;
-    }
-
-    function apiLogout() {
-        apiState.isLoggedIn = false;
-        apiState.cookieJar = {};
-        apiState.playlists = [];
-        apiState.currentPlaylistId = null;
-        localStorage.removeItem('music-api-cookies');
-        emit('fm:logout', {});
-    }
-
-    // ── API Get Playlists ────────────────────────────────────
-    async function apiGetPlaylists() {
-        var url = getApiUrl('user/playlist');
-        if (!url) throw new Error('API endpoint not configured');
-
-        var headers = {};
-        if (apiState.cookieJar && Object.keys(apiState.cookieJar).length > 0) {
-            headers['Cookie'] = getCookieHeader();
-        }
-
-        var res = await fetch(url, { headers: headers });
-        if (!res.ok) throw new Error('Failed to get playlists: HTTP ' + res.status);
-
-        var data = await res.json();
-        if (data.code !== 200) throw new Error('Failed to get playlists: ' + (data.message || 'unknown error'));
-
-        apiState.playlists = (data.playlist || []).map(function (p) {
-            return {
-                id: p.id,
-                name: p.name,
-                cover: p.coverImgUrl,
-                trackCount: p.trackCount,
-                creator: p.creator ? p.creator.nickname : ''
-            };
-        });
-
-        emit('fm:playlists', { playlists: apiState.playlists });
-        return apiState.playlists;
-    }
-
-    // ── API Get Playlist Detail ──────────────────────────────
-    async function apiGetPlaylistDetail(playlistId) {
-        var url = getApiUrl('playlist/detail?id=' + encodeURIComponent(playlistId));
-        if (!url) throw new Error('API endpoint not configured');
-
-        var res = await fetch(url);
-        if (!res.ok) throw new Error('Failed to get playlist: HTTP ' + res.status);
-
-        var data = await res.json();
-        if (data.code !== 200) throw new Error('Failed to get playlist: ' + (data.message || 'unknown error'));
-
-        var playlist = data.playlist;
-        if (!playlist) throw new Error('Playlist not found');
-
-        return {
-            id: playlist.id,
-            name: playlist.name,
-            cover: playlist.coverImgUrl,
-            tracks: playlist.tracks || []
-        };
-    }
-
-    // ── API Get Song URL ─────────────────────────────────────
-    async function apiGetSongUrl(songId, quality) {
-        var br = QUALITY_MAP[quality || 'high'] || 320000;
-        var url = getApiUrl('song/url/v1?id=' + encodeURIComponent(songId) + '&br=' + br);
-        if (!url) throw new Error('API endpoint not configured');
-
-        var headers = {};
-        if (apiState.cookieJar && Object.keys(apiState.cookieJar).length > 0) {
-            headers['Cookie'] = getCookieHeader();
-        }
-
-        var res = await fetch(url, { headers: headers });
-        if (!res.ok) throw new Error('Failed to get song URL: HTTP ' + res.status);
-
-        var data = await res.json();
-        if (data.code !== 200) throw new Error('Failed to get song URL: ' + (data.message || 'unknown error'));
-
-        var song = (data.data || []).find(function (s) { return s.id == songId; });
-        if (!song || !song.url) throw new Error('Song URL not found');
-
-        return song.url;
-    }
-
-    // ── API Get Lyrics ───────────────────────────────────────
-    async function apiGetLyrics(songId) {
-        var url = getApiUrl('lyric?id=' + encodeURIComponent(songId));
-        if (!url) return null;
-
-        var res = await fetch(url);
-        if (!res.ok) return null;
-
-        var data = await res.json();
-        if (data.code !== 200) return null;
-
-        return data.lrc ? data.lrc.lyric : null;
-    }
-
-    // ── API Fetch Playlist (main entry) ──────────────────────
-    async function fetchApiPlaylist(playlistId) {
-        if (!playlistId) throw new Error('No playlist selected');
-
-        var detail = await apiGetPlaylistDetail(playlistId);
-        apiState.currentPlaylistId = playlistId;
-
-        // Fetch song URLs for all tracks
-        var tracks = detail.tracks;
-        var quality = (config.api && config.api.quality) || 'high';
-        var playlist = [];
-
-        for (var i = 0; i < tracks.length; i++) {
-            var track = tracks[i];
-            try {
-                var songUrl = await apiGetSongUrl(track.id, quality);
-                var lrcText = await apiGetLyrics(track.id);
-
-                var artists = (track.ar || []).map(function (a) { return a.name; }).join(', ');
-
-                playlist.push({
-                    name: track.name,
-                    artist: artists,
-                    url: songUrl,
-                    pic: track.al ? track.al.picUrl : '',
-                    lrc: lrcText,
-                    id: track.id
-                });
-            } catch (e) {
-                console.warn('Failed to load song ' + track.id + ':', e);
-                // Still add the song but without URL (will show error when playing)
-                playlist.push({
-                    name: track.name,
-                    artist: (track.ar || []).map(function (a) { return a.name; }).join(', '),
-                    url: '',
-                    pic: track.al ? track.al.picUrl : '',
-                    lrc: '',
-                    id: track.id,
-                    error: e.message
-                });
-            }
-        }
-
-        state.playlist = playlist;
-        emit('fm:init', {
-            playlist: playlist,
-            playMode: state.playMode,
-            volume: state.volume,
-            isMuted: state.isMuted
-        });
-
-        if (playlist.length > 0) {
-            loadTrack(0, false);
-        }
-    }
-
-    // ── API Init (check login, fetch playlists) ──────────────
-    async function initApi() {
-        // Restore cookies from localStorage
-        var storedCookies = localStorage.getItem('music-api-cookies');
-        if (storedCookies) {
-            try {
-                apiState.cookieJar = JSON.parse(storedCookies);
-                apiState.isLoggedIn = true;
-            } catch (e) {
-                localStorage.removeItem('music-api-cookies');
-            }
-        }
-
-        if (!apiState.isLoggedIn) {
-            emit('fm:api-status', { isLoggedIn: false });
-            return;
-        }
-
-        try {
-            await apiGetPlaylists();
-            if (apiState.playlists.length > 0) {
-                // Auto-select first playlist
-                await fetchApiPlaylist(apiState.playlists[0].id);
-            } else {
-                emit('fm:error', { message: config.i18n.noPlaylists });
-            }
-        } catch (e) {
-            console.error('API init error:', e);
-            // Cookie might be expired, try re-login
-            apiLogout();
-            emit('fm:api-status', { isLoggedIn: false });
-            emit('fm:error', { message: config.i18n.loginFailed });
-        }
-
-        emit('fm:api-status', { isLoggedIn: true, playlists: apiState.playlists });
     }
 
     // ── Meting fetch ─────────────────────────────────────────
@@ -767,27 +355,13 @@ const managerConfigStr = JSON.stringify({
         state.initializing = true;
 
         try {
-            if (config.mode === 'api' && config.api) {
-                await initApi();
-                // API mode: always emit fm:init to close loading spinner
-                state.initialized = true;
-                emit('fm:init', {
-                    playlist: state.playlist,
-                    playMode: state.playMode,
-                    volume: state.volume,
-                    isMuted: state.isMuted
-                });
-                if (state.playlist.length === 0 && !apiState.isLoggedIn) {
-                    // Not logged in, show login prompt
-                    emit('fm:api-status', { isLoggedIn: false });
-                }
-            } else if (config.mode === 'meting' && config.meting) {
+            if (config.mode === 'meting' && config.meting) {
                 await fetchMetingData();
             } else if (config.mode === 'local') {
                 state.playlist = config.localPlaylist || [];
             }
 
-            if (config.mode !== 'api' && state.playlist.length > 0) {
+            if (state.playlist.length > 0) {
                 // Apply volume
                 audio.volume = state.volume;
 
@@ -806,7 +380,7 @@ const managerConfigStr = JSON.stringify({
                 });
 
                 loadTrack(startIndex, false);
-            } else if (config.mode !== 'api') {
+            } else {
                 state.initialized = true;
                 emit('fm:init', {
                     playlist: [],
@@ -853,8 +427,7 @@ const managerConfigStr = JSON.stringify({
                 currentLrcIndex: state.currentLrcIndex,
                 initialized: state.initialized,
                 error: state.error,
-                config: config,
-                apiState: apiState
+                config: config
             };
         },
         togglePlay: togglePlay,
@@ -866,14 +439,7 @@ const managerConfigStr = JSON.stringify({
         seek: seek,
         seekToTime: seekToTime,
         playTrackByIndex: playTrackByIndex,
-        loadTrack: loadTrack,
-
-        // API methods
-        login: apiLogin,
-        logout: apiLogout,
-        getPlaylists: apiGetPlaylists,
-        selectPlaylist: fetchApiPlaylist,
-        getApiState: function () { return apiState; }
+        loadTrack: loadTrack
     };
 })();
 </script>
