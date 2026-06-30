@@ -34,4 +34,26 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 				lrc: "/assets/music/lrc/玻璃.lrc",
 			},
 			{
-				"
+				name: "颜色",
+				artist: "Gareth.T",
+				url: "/assets/music/颜色.mp3",
+				cover: "/assets/music/cover/vinyl.svg",
+				lrc: "/assets/music/lrc/颜色.lrc",
+			},
+			{
+				name: "用背脊唱情歌",
+				artist: "Gareth.T",
+				url: "/assets/music/用背脊唱情歌.mp3",
+				cover: "/assets/music/cover/vinyl.svg",
+				lrc: "/assets/music/lrc/用背脊唱情歌.lrc",
+			},
+			{
+				name: "遇上你之前的我",
+				artist: "Gareth.T",
+				url: "/assets/music/遇上你之前的我.mp3",
+				cover: "/assets/music/cover/vinyl.svg",
+				lrc: "/assets/music/lrc/遇上你之前的我.lrc",
+			},
+		],
+	},
+};
