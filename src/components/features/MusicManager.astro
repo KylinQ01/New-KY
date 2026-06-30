@@ -31,6 +31,7 @@ const localPlaylist =
 const managerConfigStr = JSON.stringify({
 	mode: config.mode,
 	meting: config.meting,
+	api: config.api,
 	localPlaylist: localPlaylist,
 	volume: config.volume ?? 0.7,
 	playMode: config.playMode ?? "list",
@@ -52,6 +53,14 @@ const managerConfigStr = JSON.stringify({
 		pause: i18n(I18nKey.musicPause),
 		progress: i18n(I18nKey.musicProgress),
 		noCover: i18n(I18nKey.musicNoCover),
+		login: i18n(I18nKey.musicLogin),
+		logout: i18n(I18nKey.musicLogout),
+		loginSuccess: i18n(I18nKey.musicLoginSuccess),
+		loginFailed: i18n(I18nKey.musicLoginFailed),
+		loadingPlaylists: i18n(I18nKey.musicLoadingPlaylists),
+		noPlaylists: i18n(I18nKey.musicNoPlaylists),
+		phone: i18n(I18nKey.musicPhone),
+		password: i18n(I18nKey.musicPassword),
 	},
 });
 ---
@@ -123,9 +132,280 @@ const managerConfigStr = JSON.stringify({
     else if (config.playMode === 'one') state.playMode = 1;
     else state.playMode = 0;
 
+    // ── API State ────────────────────────────────────────────
+    var apiState = {
+        isLoggedIn: false,
+        cookieJar: {},
+        playlists: [],
+        currentPlaylistId: null
+    };
+
+    // Quality to bitrate mapping
+    var QUALITY_MAP = {
+        'standard': 128000,
+        'high': 320000,
+        'lossless': 999000,
+        'hires': 2000000
+    };
+
     // ── Event helpers ────────────────────────────────────────
     function emit(name, detail) {
         window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+    }
+
+    // ── API Helpers ──────────────────────────────────────────
+    function getApiUrl(path) {
+        var base = (config.api && config.api.endpoint) || '';
+        if (!base) return '';
+        if (!base.endsWith('/')) base += '/';
+        return base + path;
+    }
+
+    function getCookieHeader() {
+        var cookies = [];
+        for (var key in apiState.cookieJar) {
+            if (apiState.cookieJar.hasOwnProperty(key)) {
+                cookies.push(key + '=' + apiState.cookieJar[key]);
+            }
+        }
+        return cookies.join('; ');
+    }
+
+    function parseCookies(header) {
+        if (!header) return {};
+        var cookies = {};
+        header.split(';').forEach(function (pair) {
+            var parts = pair.split('=');
+            if (parts.length >= 2) {
+                var key = parts[0].trim();
+                var value = parts.slice(1).join('=').trim();
+                cookies[key] = value;
+            }
+        });
+        return cookies;
+    }
+
+    // ── API Login ────────────────────────────────────────────
+    async function apiLogin(phone, password) {
+        var loginUrl = getApiUrl('login/cellphone');
+        if (!loginUrl) throw new Error('API endpoint not configured');
+
+        var headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+        var body = 'phone=' + encodeURIComponent(phone) + '&password=' + encodeURIComponent(password);
+
+        var res = await fetch(loginUrl, {
+            method: 'POST',
+            headers: headers,
+            body: body
+        });
+
+        if (!res.ok) throw new Error('Login failed: HTTP ' + res.status);
+
+        var data = await res.json();
+        if (data.code !== 200) throw new Error('Login failed: ' + (data.message || 'unknown error'));
+
+        // Extract cookies from response
+        var setCookie = res.headers.get('set-cookie');
+        if (setCookie) {
+            apiState.cookieJar = Object.assign(apiState.cookieJar, parseCookies(setCookie));
+        }
+
+        apiState.isLoggedIn = true;
+        localStorage.setItem('music-api-cookies', JSON.stringify(apiState.cookieJar));
+
+        emit('fm:login', { success: true });
+        return data;
+    }
+
+    function apiLogout() {
+        apiState.isLoggedIn = false;
+        apiState.cookieJar = {};
+        apiState.playlists = [];
+        apiState.currentPlaylistId = null;
+        localStorage.removeItem('music-api-cookies');
+        emit('fm:logout', {});
+    }
+
+    // ── API Get Playlists ────────────────────────────────────
+    async function apiGetPlaylists() {
+        var url = getApiUrl('user/playlist');
+        if (!url) throw new Error('API endpoint not configured');
+
+        var headers = {};
+        if (apiState.cookieJar && Object.keys(apiState.cookieJar).length > 0) {
+            headers['Cookie'] = getCookieHeader();
+        }
+
+        var res = await fetch(url, { headers: headers });
+        if (!res.ok) throw new Error('Failed to get playlists: HTTP ' + res.status);
+
+        var data = await res.json();
+        if (data.code !== 200) throw new Error('Failed to get playlists: ' + (data.message || 'unknown error'));
+
+        apiState.playlists = (data.playlist || []).map(function (p) {
+            return {
+                id: p.id,
+                name: p.name,
+                cover: p.coverImgUrl,
+                trackCount: p.trackCount,
+                creator: p.creator ? p.creator.nickname : ''
+            };
+        });
+
+        emit('fm:playlists', { playlists: apiState.playlists });
+        return apiState.playlists;
+    }
+
+    // ── API Get Playlist Detail ──────────────────────────────
+    async function apiGetPlaylistDetail(playlistId) {
+        var url = getApiUrl('playlist/detail?id=' + encodeURIComponent(playlistId));
+        if (!url) throw new Error('API endpoint not configured');
+
+        var res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to get playlist: HTTP ' + res.status);
+
+        var data = await res.json();
+        if (data.code !== 200) throw new Error('Failed to get playlist: ' + (data.message || 'unknown error'));
+
+        var playlist = data.playlist;
+        if (!playlist) throw new Error('Playlist not found');
+
+        return {
+            id: playlist.id,
+            name: playlist.name,
+            cover: playlist.coverImgUrl,
+            tracks: playlist.tracks || []
+        };
+    }
+
+    // ── API Get Song URL ─────────────────────────────────────
+    async function apiGetSongUrl(songId, quality) {
+        var br = QUALITY_MAP[quality || 'high'] || 320000;
+        var url = getApiUrl('song/url/v1?id=' + encodeURIComponent(songId) + '&br=' + br);
+        if (!url) throw new Error('API endpoint not configured');
+
+        var headers = {};
+        if (apiState.cookieJar && Object.keys(apiState.cookieJar).length > 0) {
+            headers['Cookie'] = getCookieHeader();
+        }
+
+        var res = await fetch(url, { headers: headers });
+        if (!res.ok) throw new Error('Failed to get song URL: HTTP ' + res.status);
+
+        var data = await res.json();
+        if (data.code !== 200) throw new Error('Failed to get song URL: ' + (data.message || 'unknown error'));
+
+        var song = (data.data || []).find(function (s) { return s.id == songId; });
+        if (!song || !song.url) throw new Error('Song URL not found');
+
+        return song.url;
+    }
+
+    // ── API Get Lyrics ───────────────────────────────────────
+    async function apiGetLyrics(songId) {
+        var url = getApiUrl('lyric?id=' + encodeURIComponent(songId));
+        if (!url) return null;
+
+        var res = await fetch(url);
+        if (!res.ok) return null;
+
+        var data = await res.json();
+        if (data.code !== 200) return null;
+
+        return data.lrc ? data.lrc.lyric : null;
+    }
+
+    // ── API Fetch Playlist (main entry) ──────────────────────
+    async function fetchApiPlaylist(playlistId) {
+        if (!playlistId) throw new Error('No playlist selected');
+
+        var detail = await apiGetPlaylistDetail(playlistId);
+        apiState.currentPlaylistId = playlistId;
+
+        // Fetch song URLs for all tracks
+        var tracks = detail.tracks;
+        var quality = (config.api && config.api.quality) || 'high';
+        var playlist = [];
+
+        for (var i = 0; i < tracks.length; i++) {
+            var track = tracks[i];
+            try {
+                var songUrl = await apiGetSongUrl(track.id, quality);
+                var lrcText = await apiGetLyrics(track.id);
+
+                var artists = (track.ar || []).map(function (a) { return a.name; }).join(', ');
+
+                playlist.push({
+                    name: track.name,
+                    artist: artists,
+                    url: songUrl,
+                    pic: track.al ? track.al.picUrl : '',
+                    lrc: lrcText,
+                    id: track.id
+                });
+            } catch (e) {
+                console.warn('Failed to load song ' + track.id + ':', e);
+                // Still add the song but without URL (will show error when playing)
+                playlist.push({
+                    name: track.name,
+                    artist: (track.ar || []).map(function (a) { return a.name; }).join(', '),
+                    url: '',
+                    pic: track.al ? track.al.picUrl : '',
+                    lrc: '',
+                    id: track.id,
+                    error: e.message
+                });
+            }
+        }
+
+        state.playlist = playlist;
+        emit('fm:init', {
+            playlist: playlist,
+            playMode: state.playMode,
+            volume: state.volume,
+            isMuted: state.isMuted
+        });
+
+        if (playlist.length > 0) {
+            loadTrack(0, false);
+        }
+    }
+
+    // ── API Init (check login, fetch playlists) ──────────────
+    async function initApi() {
+        // Restore cookies from localStorage
+        var storedCookies = localStorage.getItem('music-api-cookies');
+        if (storedCookies) {
+            try {
+                apiState.cookieJar = JSON.parse(storedCookies);
+                apiState.isLoggedIn = true;
+            } catch (e) {
+                localStorage.removeItem('music-api-cookies');
+            }
+        }
+
+        if (!apiState.isLoggedIn) {
+            emit('fm:api-status', { isLoggedIn: false });
+            return;
+        }
+
+        try {
+            await apiGetPlaylists();
+            if (apiState.playlists.length > 0) {
+                // Auto-select first playlist
+                await fetchApiPlaylist(apiState.playlists[0].id);
+            } else {
+                emit('fm:error', { message: config.i18n.noPlaylists });
+            }
+        } catch (e) {
+            console.error('API init error:', e);
+            // Cookie might be expired, try re-login
+            apiLogout();
+            emit('fm:api-status', { isLoggedIn: false });
+            emit('fm:error', { message: config.i18n.loginFailed });
+        }
+
+        emit('fm:api-status', { isLoggedIn: true, playlists: apiState.playlists });
     }
 
     // ── Meting fetch ─────────────────────────────────────────
@@ -355,13 +635,15 @@ const managerConfigStr = JSON.stringify({
         state.initializing = true;
 
         try {
-            if (config.mode === 'meting' && config.meting) {
+            if (config.mode === 'api' && config.api) {
+                await initApi();
+            } else if (config.mode === 'meting' && config.meting) {
                 await fetchMetingData();
             } else if (config.mode === 'local') {
                 state.playlist = config.localPlaylist || [];
             }
 
-            if (state.playlist.length > 0) {
+            if (config.mode !== 'api' && state.playlist.length > 0) {
                 // Apply volume
                 audio.volume = state.volume;
 
@@ -380,7 +662,7 @@ const managerConfigStr = JSON.stringify({
                 });
 
                 loadTrack(startIndex, false);
-            } else {
+            } else if (config.mode !== 'api') {
                 state.initialized = true;
                 emit('fm:init', {
                     playlist: [],
@@ -427,7 +709,8 @@ const managerConfigStr = JSON.stringify({
                 currentLrcIndex: state.currentLrcIndex,
                 initialized: state.initialized,
                 error: state.error,
-                config: config
+                config: config,
+                apiState: apiState
             };
         },
         togglePlay: togglePlay,
@@ -439,7 +722,14 @@ const managerConfigStr = JSON.stringify({
         seek: seek,
         seekToTime: seekToTime,
         playTrackByIndex: playTrackByIndex,
-        loadTrack: loadTrack
+        loadTrack: loadTrack,
+
+        // API methods
+        login: apiLogin,
+        logout: apiLogout,
+        getPlaylists: apiGetPlaylists,
+        selectPlaylist: fetchApiPlaylist,
+        getApiState: function () { return apiState; }
     };
 })();
 </script>

@@ -14,6 +14,7 @@ const { class: className, style, id } = Astro.props;
 const config = musicPlayerConfig;
 
 const viewConfigStr = JSON.stringify({
+	mode: config.mode,
 	showLyrics: config.showLyrics ?? true,
 	i18n: {
 		noPlaying: i18n(I18nKey.musicNoPlaying),
@@ -27,6 +28,15 @@ const viewConfigStr = JSON.stringify({
 		pause: i18n(I18nKey.musicPause),
 		noCover: i18n(I18nKey.musicNoCover),
 		music: i18n(I18nKey.music),
+		login: i18n(I18nKey.musicLogin),
+		logout: i18n(I18nKey.musicLogout),
+		loginSuccess: i18n(I18nKey.musicLoginSuccess),
+		loginFailed: i18n(I18nKey.musicLoginFailed),
+		loadingPlaylists: i18n(I18nKey.musicLoadingPlaylists),
+		noPlaylists: i18n(I18nKey.musicNoPlaylists),
+		phone: i18n(I18nKey.musicPhone),
+		password: i18n(I18nKey.musicPassword),
+		selectPlaylist: i18n(I18nKey.musicSelectPlaylist),
 	},
 });
 
@@ -54,11 +64,17 @@ const widgetId =
                     {i18n(I18nKey.music)}
                 </h3>
             </div>
-            <!-- Top Right: Lyric Toggle -->
-            <button class={`btn-lrc-toggle hover:text-(--primary) transition-all duration-300 p-0.5 pr-2 transform active:scale-95 text-neutral-400 shrink-0 ${!config.showLyrics ? 'hidden' : ''}`} title={i18n(I18nKey.musicLyrics)} aria-label={i18n(I18nKey.musicLyrics)}>
-                <Icon is:inline name="material-symbols:subtitles-off-outline-rounded" class="icon-lrc-off text-xl" aria-hidden="true" />
-                <Icon is:inline name="material-symbols:subtitles-outline-rounded" class="icon-lrc-on text-xl hidden" aria-hidden="true" />
-            </button>
+            <!-- Top Right: Lyric Toggle & Login -->
+            <div class="flex items-center gap-1">
+                <button class={`btn-lrc-toggle hover:text-(--primary) transition-all duration-300 p-0.5 pr-2 transform active:scale-95 text-neutral-400 shrink-0 ${!config.showLyrics ? 'hidden' : ''}`} title={i18n(I18nKey.musicLyrics)} aria-label={i18n(I18nKey.musicLyrics)}>
+                    <Icon is:inline name="material-symbols:subtitles-off-outline-rounded" class="icon-lrc-off text-xl" aria-hidden="true" />
+                    <Icon is:inline name="material-symbols:subtitles-outline-rounded" class="icon-lrc-on text-xl hidden" aria-hidden="true" />
+                </button>
+                <button class="btn-login hover:text-(--primary) transition-all duration-300 p-0.5 pr-2 transform active:scale-95 text-neutral-400 shrink-0" title={i18n(I18nKey.musicLogin)} aria-label={i18n(I18nKey.musicLogin)}>
+                    <Icon is:inline name="material-symbols:login-rounded" class="icon-login text-xl" aria-hidden="true" />
+                    <Icon is:inline name="material-symbols:logout-rounded" class="icon-logout text-xl hidden" aria-hidden="true" />
+                </button>
+            </div>
         </div>
 
         <div class="min-w-0 overflow-hidden">
@@ -153,6 +169,20 @@ const widgetId =
     </div>
 </div>
 
+<!-- Login Form Overlay -->
+<div class="music-login-overlay absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-[2px] transition-opacity duration-300 opacity-0 pointer-events-none rounded-xl" aria-hidden="true">
+    <div class="w-3/4 flex flex-col gap-2">
+        <h4 class="text-sm font-bold text-neutral-800 dark:text-neutral-200 text-center">{i18n(I18nKey.musicLogin)}</h4>
+        <input class="login-phone w-full px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 outline-none focus:border-(--primary)" type="tel" placeholder={i18n(I18nKey.musicPhone)} maxlength="11" />
+        <input class="login-password w-full px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 outline-none focus:border-(--primary)" type="password" placeholder={i18n(I18nKey.musicPassword)} />
+        <div class="flex gap-2">
+            <button class="login-submit flex-1 py-1 text-sm font-medium bg-(--primary) text-white rounded-lg hover:brightness-110 transition-colors active:scale-95">{i18n(I18nKey.musicLogin)}</button>
+            <button class="login-cancel flex-1 py-1 text-sm font-medium bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors active:scale-95">{i18n(I18nKey.musicLogout)}</button>
+        </div>
+        <p class="login-message text-xs text-center text-neutral-500 dark:text-neutral-400 mt-1"></p>
+    </div>
+</div>
+
 <!-- Loading Overlay -->
     <div class="music-loading absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/60 dark:bg-[#1e1e1e]/60 backdrop-blur-[2px] transition-opacity duration-300 opacity-0 pointer-events-none rounded-xl" aria-busy="true" aria-hidden="true">
     <div class="w-8 h-8 text-(--primary) animate-spin">
@@ -179,6 +209,19 @@ const widgetId =
         <div class="item-title text-xs font-bold text-neutral-700 dark:text-neutral-200 truncate group-hover:text-(--primary) transition-colors"></div>
         <div class="item-artist text-[10px] text-neutral-400 truncate"></div>
     </div>
+</div>
+</template>
+
+<template id={`playlist-select-template-${widgetId}`}>
+<div class="playlist-select-item flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+    <div class="w-10 h-10 rounded-md overflow-hidden shrink-0 relative bg-neutral-200 dark:bg-neutral-700">
+        <img src="" class="select-cover w-full h-full object-cover" loading="lazy" alt="" />
+    </div>
+    <div class="flex-1 min-w-0">
+        <div class="select-name text-xs font-bold text-neutral-700 dark:text-neutral-200 truncate group-hover:text-(--primary) transition-colors"></div>
+        <div class="select-info text-[10px] text-neutral-400 truncate"></div>
+    </div>
+    <Icon is:inline name="material-symbols:check-circle-rounded" class="select-check text-(--primary) text-lg hidden" aria-hidden="true" />
 </div>
 </template>
 
@@ -225,14 +268,25 @@ const widgetId =
         btnDrawer: widget.querySelector('.btn-drawer-toggle'),
         playlistDrawer: widget.querySelector('.playlist-drawer'),
         playlistContainer: widget.querySelector('.playlist-container'),
-        itemTemplate: document.getElementById('playlist-item-template-' + widgetId)
+        itemTemplate: document.getElementById('playlist-item-template-' + widgetId),
+        selectTemplate: document.getElementById('playlist-select-template-' + widgetId),
+        btnLogin: widget.querySelector('.btn-login'),
+        iconLogin: widget.querySelector('.icon-login'),
+        iconLogout: widget.querySelector('.icon-logout'),
+        loginOverlay: widget.querySelector('.music-login-overlay'),
+        loginPhone: widget.querySelector('.login-phone'),
+        loginPassword: widget.querySelector('.login-password'),
+        loginSubmit: widget.querySelector('.login-submit'),
+        loginCancel: widget.querySelector('.login-cancel'),
+        loginMessage: widget.querySelector('.login-message')
     };
 
     // Verify critical elements
     var _critical = [ui.btnPlay, ui.btnRepeat, ui.btnMute, ui.volContainer,
         ui.btnDrawer, ui.btnLrc, ui.lrcDrawer, ui.lrcContainer,
         ui.progressContainer, ui.btnNext, ui.btnPrev, ui.loading,
-        ui.cover, ui.title, ui.artist, ui.playlistContainer, ui.itemTemplate];
+        ui.cover, ui.title, ui.artist, ui.playlistContainer, ui.itemTemplate,
+        ui.btnLogin, ui.loginOverlay];
     if (_critical.some(function(el) { return !el; })) return;
 
     // ── Local state (drawers, user scrolling, virtual scroll) ──
@@ -250,7 +304,16 @@ const widgetId =
             renderedEls: {},
             scrollRaf: 0,
             drawerOpen: false
-        }
+        },
+        playlistVs: {
+            playlists: [],
+            renderedStart: -1,
+            renderedEnd: -1,
+            renderedEls: {},
+            scrollRaf: 0,
+            drawerOpen: false
+        },
+        showLogin: false
     };
 
     // ── UI update functions ──────────────────────────────────
@@ -359,6 +422,40 @@ const widgetId =
         ui.progressContainer.setAttribute('aria-valuenow', '0');
         ui.currentTime.innerText = '0:00';
         ui.totalTime.innerText = '0:00';
+    }
+
+    function updateLoginUI(isLoggedIn) {
+        if (isLoggedIn) {
+            ui.iconLogin.classList.add('hidden');
+            ui.iconLogout.classList.remove('hidden');
+            ui.btnLogin.title = cfg.i18n.logout;
+            ui.btnLogin.setAttribute('aria-label', cfg.i18n.logout);
+        } else {
+            ui.iconLogin.classList.remove('hidden');
+            ui.iconLogout.classList.add('hidden');
+            ui.btnLogin.title = cfg.i18n.login;
+            ui.btnLogin.setAttribute('aria-label', cfg.i18n.login);
+        }
+    }
+
+    function showLogin(show) {
+        local.showLogin = show;
+        if (show) {
+            ui.loginOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            ui.loginOverlay.classList.add('opacity-100', 'pointer-events-auto');
+            ui.loginMessage.innerText = '';
+            ui.loginPhone.value = '';
+            ui.loginPassword.value = '';
+            ui.loginPhone.focus();
+        } else {
+            ui.loginOverlay.classList.add('opacity-0', 'pointer-events-none');
+            ui.loginOverlay.classList.remove('opacity-100', 'pointer-events-auto');
+        }
+    }
+
+    function setLoginMessage(msg, isError) {
+        ui.loginMessage.innerText = msg;
+        ui.loginMessage.className = 'login-message text-xs text-center mt-1' + (isError ? ' text-red-500' : ' text-green-500');
     }
 
     // ── Virtual scroll helpers (absolute-position based) ──────
@@ -530,6 +627,76 @@ const widgetId =
         }
     }
 
+    // ── Playlist selector (for API mode) ─────────────────────
+    var SELECT_ITEM_H = 50;
+
+    function renderPlaylistSelector(playlists, currentId) {
+        var vs = local.playlistVs;
+        vs.playlists = playlists;
+        vs.renderedStart = -1;
+        vs.renderedEnd = -1;
+        vs.renderedEls = {};
+        vs.drawerOpen = ui.playlistDrawer.style.gridTemplateRows === '1fr';
+        ui.playlistContainer.innerHTML = '';
+
+        if (!vs.drawerOpen || !ui.selectTemplate) return;
+
+        // Set container height for virtual scroll
+        ui.playlistContainer.style.height = (playlists.length * SELECT_ITEM_H) + 'px';
+
+        // Render all playlist items (usually not many)
+        var frag = document.createDocumentFragment();
+        playlists.forEach(function (p, idx) {
+            var clone = ui.selectTemplate.content.cloneNode(true);
+            var itemEl = clone.querySelector('.playlist-select-item');
+            var img = clone.querySelector('.select-cover');
+            var name = clone.querySelector('.select-name');
+            var info = clone.querySelector('.select-info');
+            var check = clone.querySelector('.select-check');
+
+            img.src = p.cover || '';
+            img.alt = p.name;
+            name.innerText = p.name;
+            info.innerText = (p.creator || '') + ' · ' + (p.trackCount || 0) + '首';
+
+            if (p.id == currentId) {
+                check.classList.remove('hidden');
+                itemEl.classList.add('bg-neutral-100', 'dark:bg-white/10');
+            }
+
+            itemEl.dataset.playlistId = p.id;
+            itemEl.onclick = function () {
+                showLogin(false);
+                setLoading(true);
+                mgr.selectPlaylist(p.id).then(function () {
+                    setLoading(false);
+                }).catch(function (e) {
+                    setLoading(false);
+                    setLoginMessage(e.message || cfg.i18n.error, true);
+                    showLogin(true);
+                });
+            };
+
+            frag.appendChild(clone);
+        });
+        ui.playlistContainer.appendChild(frag);
+    }
+
+    function updatePlaylistSelectorActive(currentId) {
+        var items = ui.playlistContainer.querySelectorAll('.playlist-select-item');
+        items.forEach(function (item) {
+            var id = item.dataset.playlistId;
+            var check = item.querySelector('.select-check');
+            if (id == currentId) {
+                check.classList.remove('hidden');
+                item.classList.add('bg-neutral-100', 'dark:bg-white/10');
+            } else {
+                check.classList.add('hidden');
+                item.classList.remove('bg-neutral-100', 'dark:bg-white/10');
+            }
+        });
+    }
+
     function renderLyricsUI(lyrics, status) {
         local.currentLrcIndex = -1;
         ui.lrcContainer.innerHTML = '';
@@ -625,6 +792,11 @@ const widgetId =
         }
         // Update cover animation state to match play state
         ui.cover.style.animationPlayState = s.isPlaying ? 'running' : 'paused';
+
+        // Login UI
+        if (s.apiState) {
+            updateLoginUI(s.apiState.isLoggedIn);
+        }
     }
 
     // ── Event listeners (fm:* from manager) ──────────────────
@@ -686,6 +858,34 @@ const widgetId =
         ui.title.innerText = e.detail.message || cfg.i18n.error;
     });
 
+    on('fm:login', function (e) {
+        if (e.detail.success) {
+            setLoginMessage(cfg.i18n.loginSuccess, false);
+            setTimeout(function () { showLogin(false); }, 800);
+        }
+    });
+
+    on('fm:logout', function () {
+        updateLoginUI(false);
+        ui.playlistContainer.innerHTML = '';
+    });
+
+    on('fm:playlists', function (e) {
+        var playlists = e.detail.playlists || [];
+        if (ui.playlistDrawer.style.gridTemplateRows === '1fr') {
+            renderPlaylistSelector(playlists, mgr.getApiState().currentPlaylistId);
+        }
+    });
+
+    on('fm:api-status', function (e) {
+        updateLoginUI(e.detail.isLoggedIn);
+        if (e.detail.isLoggedIn && e.detail.playlists) {
+            if (ui.playlistDrawer.style.gridTemplateRows === '1fr') {
+                renderPlaylistSelector(e.detail.playlists, mgr.getApiState().currentPlaylistId);
+            }
+        }
+    });
+
     // ── Button click delegates ───────────────────────────────
     ui.btnPlay.addEventListener('click', function () { mgr.togglePlay(); });
     ui.btnNext.addEventListener('click', function () { mgr.playNext(); });
@@ -705,6 +905,47 @@ const widgetId =
         var clickX = e.clientX - rect.left;
         var percent = Math.min(Math.max(clickX / rect.width, 0), 1);
         mgr.seek(percent);
+    });
+
+    // ── Login button ─────────────────────────────────────────
+    ui.btnLogin.addEventListener('click', function () {
+        var apiState = mgr.getApiState();
+        if (apiState && apiState.isLoggedIn) {
+            // Logout
+            mgr.logout();
+        } else {
+            // Show login form
+            showLogin(true);
+        }
+    });
+
+    ui.loginSubmit.addEventListener('click', function () {
+        var phone = ui.loginPhone.value.trim();
+        var password = ui.loginPassword.value.trim();
+        if (!phone || !password) {
+            setLoginMessage(cfg.i18n.loginFailed, true);
+            return;
+        }
+        setLoginMessage('', false);
+        setLoading(true);
+        mgr.login(phone, password).then(function () {
+            setLoading(false);
+        }).catch(function (e) {
+            setLoading(false);
+            setLoginMessage(e.message || cfg.i18n.loginFailed, true);
+        });
+    });
+
+    ui.loginCancel.addEventListener('click', function () {
+        showLogin(false);
+    });
+
+    // Enter key in login form
+    ui.loginPhone.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') ui.loginSubmit.click();
+    });
+    ui.loginPassword.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') ui.loginSubmit.click();
     });
 
     // ── Drawer logic (local state) ───────────────────────────
@@ -745,6 +986,7 @@ const widgetId =
             ui.btnDrawer.classList.add('text-neutral-400');
             ui.btnDrawer.classList.remove('text-(--primary)');
             local.vs.drawerOpen = false;
+            local.playlistVs.drawerOpen = false;
         } else {
             // Close lyrics if open
             ui.lrcDrawer.style.gridTemplateRows = '0fr';
@@ -761,9 +1003,13 @@ const widgetId =
             ui.btnDrawer.classList.remove('text-neutral-400');
             ui.btnDrawer.classList.add('text-(--primary)');
             local.vs.drawerOpen = true;
+            local.playlistVs.drawerOpen = true;
 
-            // Render playlist after drawer transition settles
-            if (local.vs.playlist.length > 0) {
+            // Render playlist or playlist selector
+            var apiState = mgr.getApiState();
+            if (cfg.mode === 'api' && apiState && apiState.isLoggedIn && apiState.playlists && apiState.playlists.length > 0) {
+                renderPlaylistSelector(apiState.playlists, apiState.currentPlaylistId);
+            } else if (local.vs.playlist.length > 0) {
                 requestAnimationFrame(function () {
                     vsSetContainerHeight();
                     vsCommitRange();

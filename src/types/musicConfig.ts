@@ -1,7 +1,7 @@
 // 音乐播放器配置
 export type MusicPlayerConfig = {
-	// 使用方式：'meting' 或 'local'
-	mode?: "meting" | "local"; // "meting" 使用 Meting API，"local" 使用本地音乐列表
+	// 使用方式：'meting' | 'local' | 'api'
+	mode?: "meting" | "local" | "api"; // "meting" 使用 Meting API，"local" 使用本地音乐列表，"api" 使用自建音乐 API（支持登录 VIP）
 
 	// 默认音量 (0-1)
 	volume?: number;
@@ -36,14 +36,28 @@ export type MusicPlayerConfig = {
 		fallbackApis?: string[];
 	};
 
+	// 自建音乐 API 配置（用于登录网易云/QQ 账号获取 VIP 歌曲）
+	api?: {
+		// API 地址（部署 NeteaseCloudMusicApi 的服务器地址）
+		endpoint?: string;
+
+		// 默认音质：'standard'=标准, 'high'=高质量, 'lossless'=无损, 'hires'=Hi-Res
+		quality?: "standard" | "high" | "lossless" | "hires";
+	};
+
 	// 本地音乐配置（当 mode 为 'local' 时使用）
 	local?: {
 		playlist?: Array<{
-			name: string; // 歌曲名称
-			artist: string; // 艺术家
-			url: string; // 音乐文件路径（相对于 public 目录）
-			cover?: string; // 封面图片路径（相对于 public 目录）
-			lrc?: string; // 歌词内容，支持 LRC 格式
+			// 歌曲名称
+			name: string;
+			// 艺术家
+			artist: string;
+			// 音乐文件路径（相对于 public 目录）
+			url: string;
+			// 封面图片路径（相对于 public 目录）
+			cover?: string;
+			// 歌词内容，支持 LRC 格式
+			lrc?: string;
 		}>;
 	};
 };

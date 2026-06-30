@@ -63,6 +63,15 @@ enum I18nKey {
 	musicCover = "musicCover",
 	musicNoCover = "musicNoCover",
 	musicAudioPlayer = "musicAudioPlayer",
+	musicLogin = "musicLogin",
+	musicLogout = "musicLogout",
+	musicLoginSuccess = "musicLoginSuccess",
+	musicLoginFailed = "musicLoginFailed",
+	musicLoadingPlaylists = "musicLoadingPlaylists",
+	musicNoPlaylists = "musicNoPlaylists",
+	musicPhone = "musicPhone",
+	musicPassword = "musicPassword",
+	musicSelectPlaylist = "musicSelectPlaylist",
 
 	themeColor = "themeColor",
 

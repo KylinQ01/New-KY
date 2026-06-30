@@ -42,6 +42,15 @@ export const zh_CN: Translation = {
 	[Key.musicCover]: "封面",
 	[Key.musicNoCover]: "暂无封面",
 	[Key.musicAudioPlayer]: "音频播放器",
+	[Key.musicLogin]: "登录",
+	[Key.musicLogout]: "退出",
+	[Key.musicLoginSuccess]: "登录成功",
+	[Key.musicLoginFailed]: "登录失败",
+	[Key.musicLoadingPlaylists]: "加载歌单中...",
+	[Key.musicNoPlaylists]: "没有找到歌单",
+	[Key.musicPhone]: "手机号",
+	[Key.musicPassword]: "密码",
+	[Key.musicSelectPlaylist]: "选择歌单",
 
 	// 公告栏
 	[Key.announcement]: "公告",
