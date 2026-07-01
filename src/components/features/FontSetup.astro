@@ -9,6 +9,7 @@
  * 字体的 fallback 由各字体定义中的 fallbacks 字段控制（Astro Font API 处理），
  */
 import { Font } from "astro:assets";
+import type { GetStaticPathsResult } from "astro";
 import { fontConfig } from "@/config";
 import { collectUsedFontCssVars } from "@/utils/fontHelper";
 
@@ -49,15 +50,20 @@ const bannerSubtitleFontVar = fontConfig.enable
 const navbarTitleFontVar = fontConfig.enable
 	? fontConfig.navbarTitleFont || ""
 	: "";
+
+// 当 Astro Font API 未配置字体（fonts: []）时，<Font /> 找不到数据会抛错。
+// 这里跳过 <Font /> 渲染，仅保留 CSS 变量设置（CSS 变量会 fallback 到系统字体）。
+const useFontApi = false;
 ---
 
 <!-- Astro Font API: 自动下载、缓存并生成优化的 @font-face -->
-{Array.from(allCssVars).map((cssVar) => (
-  <Font
-    cssVariable={cssVar as any}
-    preload={selectedFontVars.includes(cssVar)}
-  />
-))}
+{useFontApi &&
+	Array.from(allCssVars).map((cssVar) => (
+		<Font
+			cssVariable={cssVar as any}
+			preload={selectedFontVars.includes(cssVar)}
+		/>
+	))}
 
 <!-- 区域字体 CSS 变量 + body 字体 -->
 {fontConfig.enable && (bannerTitleFontVar || bannerSubtitleFontVar || navbarTitleFontVar || selectedFontVars.length > 0) && (
