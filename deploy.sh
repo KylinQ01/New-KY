@@ -53,12 +53,15 @@ echo ""
 echo "===> 丢弃服务器本地改动"
 git restore . 2>/dev/null || true
 
-# ---- 拉取最新代码 (彻底绕过分歧分支检查) ----
+# ---- 拉取最新代码 (兼容新版 git 的分歧分支检查) ----
 echo ""
 echo "===> 拉取最新代码 ($BRANCH)"
-# 强制更新远程跟踪分支，使用 + 号忽略分歧检查
-git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
-git checkout -b "$BRANCH" "origin/$BRANCH"
+# 新版 git (2.39+) 在 pull.rebase 设置后会对 fetch 也做分歧检查
+# 通过 unset 拉取配置，让 fetch 回到旧版行为
+git config --local --unset pull.rebase 2>/dev/null || true
+git config --local --unset branch.autoSetupRebase 2>/dev/null || true
+git fetch origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
 
 # ---- 安装依赖 ----
 echo ""
