@@ -59,28 +59,8 @@ export default defineConfig({
 	base: "/",
 	trailingSlash: "always",
 
-	// 字体配置 - 只加载实际使用的字体，跳过未引用的以加快构建
-	fonts: (() => {
-		// 禁用字体功能时直接返回空数组，跳过 Astro Font API 集成
-		if (!fontConfig.enable) return [];
-
-		const used = collectUsedFontCssVars(fontConfig);
-		return fontsList
-			.filter((f) => used.has(f.cssVariable))
-			.map((f) => {
-				let provider;
-				switch (f.provider) {
-					case "google": provider = fontProviders.google(); break;
-					case "fontsource": provider = fontProviders.fontsource(); break;
-					case "local": provider = fontProviders.local(); break;
-					case "bunny": provider = fontProviders.bunny(); break;
-					case "fontshare": provider = fontProviders.fontshare(); break;
-					case "npm": provider = fontProviders.npm(); break;
-					default: provider = f.provider;
-				}
-				return { ...f, provider };
-			});
-	})(),
+	// 字体配置 - 跳过 Astro Font API 以降低服务器构建内存占用
+	fonts: [],
 
 	adapter,
 
