@@ -53,10 +53,11 @@ echo ""
 echo "===> 丢弃服务器本地改动"
 git restore . 2>/dev/null || true
 
-# ---- 拉取最新代码 ----
+# ---- 拉取最新代码 (fetch + reset，兼容 force-push) ----
 echo ""
 echo "===> 拉取最新代码 ($BRANCH)"
-git pull origin "$BRANCH"
+git fetch origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
 
 # ---- 安装依赖 ----
 echo ""
