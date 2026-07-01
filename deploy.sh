@@ -56,9 +56,8 @@ git restore . 2>/dev/null || true
 # ---- 拉取最新代码 (彻底绕过分歧分支检查) ----
 echo ""
 echo "===> 拉取最新代码 ($BRANCH)"
-# 删除本地分支，从远程重新检出，完全避开分歧检查
-git branch -D "$BRANCH" >/dev/null 2>&1 || true
-git fetch origin "$BRANCH" 2>/dev/null || true
+# 强制更新远程跟踪分支，使用 + 号忽略分歧检查
+git fetch origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
 git checkout -b "$BRANCH" "origin/$BRANCH"
 
 # ---- 安装依赖 ----
