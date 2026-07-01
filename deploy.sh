@@ -56,7 +56,8 @@ git restore . 2>/dev/null || true
 # ---- 拉取最新代码 (fetch + reset，兼容 force-push) ----
 echo ""
 echo "===> 拉取最新代码 ($BRANCH)"
-git fetch origin "$BRANCH"
+git config --local branch.autoSetupRebase never 2>/dev/null || true
+git fetch origin "$BRANCH" 2>/dev/null || true
 git reset --hard "origin/$BRANCH"
 
 # ---- 安装依赖 ----
