@@ -53,13 +53,12 @@ echo ""
 echo "===> 丢弃服务器本地改动"
 git restore . 2>/dev/null || true
 
-# ---- 拉取最新代码 (fetch + reset，兼容 force-push 与新版 git) ----
+# ---- 拉取最新代码 (兼容 force-push 与新版 git) ----
 echo ""
 echo "===> 拉取最新代码 ($BRANCH)"
-# 新版 git (2.39+) fetch 也会检查分歧分支，显式设置关闭检查
 git config --local pull.rebase false 2>/dev/null || true
-git fetch origin "$BRANCH"
-git reset --hard "origin/$BRANCH"
+git fetch origin "$BRANCH" 2>/dev/null || true
+git checkout -B "$BRANCH" "origin/$BRANCH"
 
 # ---- 安装依赖 ----
 echo ""
