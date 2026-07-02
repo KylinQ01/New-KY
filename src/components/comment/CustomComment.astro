@@ -1,0 +1,121 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { removeFileExtension } from "@/utils/url-utils";
+
+interface Props {
+  post?: CollectionEntry<"posts"> | CollectionEntry<"spec">;
+  customPath?: string;
+}
+
+const { post, customPath } = Astro.props as Props;
+const slugFromPath = (customPath || "/").replace(/^\/+|\/+$/g, "") || "index";
+const slug = post ? removeFileExtension(post.id) : slugFromPath;
+---
+
+<div id="post-comments" class="card-base p-8 mb-6 relative overflow-hidden">
+  <!-- 装饰背景 -->
+  <div class="absolute top-0 right-0 w-32 h-32 opacity-5 pointer-events-none">
+    <svg viewBox="0 0 100 100" class="w-full h-full">
+      <circle cx="50" cy="50" r="40" fill="currentColor" class="text-(--primary)" />
+      <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="2" class="text-(--primary)" />
+      <circle cx="50" cy="50" r="10" fill="currentColor" class="text-(--primary)" />
+    </svg>
+  </div>
+  <!-- 评论区标题 -->
+  <div class="relative z-10 mb-6">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-1 h-6 bg-linear-to-b from-(--primary) to-transparent rounded-full"></div>
+      <h3 class="text-xl font-bold text-(--btn-content)">💬 评论区</h3>
+    </div>
+    <p class="text-sm text-(--content-meta) ml-4">欢迎留言交流，任何问题和建议都请告诉我</p>
+  </div>
+  <!-- 评论内容区域 -->
+  <div class="relative z-10 pl-2 pr-2">
+    <!-- 评论列表 -->
+    <div id="comments-list" class="space-y-4">
+      <p class="text-center text-(--content-meta) py-4">加载中...</p>
+    </div>
+    <!-- 评论表单 -->
+    <div class="mt-6 pt-6 border-t border-(--line-divider)">
+      <h4 class="font-semibold text-(--text-main) mb-3">✍️ 发表评论</h4>
+      <form id="comment-form" class="space-y-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input type="text" id="comment-name" placeholder="昵称（可选）" class="w-full p-3 rounded-xl border border-(--line-color) bg-(--card-bg) text-(--text-main) focus:outline-none focus:border-(--primary) transition" />
+          <input type="email" id="comment-email" placeholder="邮箱（可选）" class="w-full p-3 rounded-xl border border-(--line-color) bg-(--card-bg) text-(--text-main) focus:outline-none focus:border-(--primary) transition" />
+        </div>
+        <textarea id="comment-content" placeholder="写下你的评论..." required class="w-full p-3 rounded-xl border border-(--line-color) bg-(--card-bg) text-(--text-main) focus:outline-none focus:border-(--primary) transition min-h-[100px] resize-y"></textarea>
+        <button type="submit" class="btn btn-primary">提交评论</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var currentSlug = window.__commentSlug || '/';
+    var commentApiUrl = 'https://api.kylinqaq.xyz/api/public/comments/' + currentSlug;
+    var commentSubmitUrl = 'https://api.kylinqaq.xyz/api/comments';
+
+    // 加载评论
+    fetch(commentApiUrl)
+      .then(function (res) { return res.json(); })
+      .then(function (comments) {
+        var container = document.getElementById('comments-list');
+        if (!container) return;
+        if (comments.length === 0) {
+          container.innerHTML = '<p class="text-center text-(--content-meta) py-4">暂无评论，快来抢沙发吧！</p>';
+        } else {
+          var html = '';
+          comments.forEach(function (c) {
+            html += '<div class="p-4 rounded-xl bg-(--card-bg) border border-(--line-color)">';
+            html += '<div class="flex items-center gap-2 mb-2">';
+            html += '<span class="font-semibold text-(--primary)">' + (c.name || '匿名用户') + '</span>';
+            html += '<span class="text-xs text-(--content-meta)">' + new Date(c.created_at).toLocaleString('zh-CN') + '</span>';
+            html += '</div>';
+            html += '<p class="text-(--text-main)">' + (c.content || '') + '</p>';
+            html += '</div>';
+          });
+          container.innerHTML = html;
+        }
+      })
+      .catch(function () {
+        var container = document.getElementById('comments-list');
+        if (container) {
+          container.innerHTML = '<p class="text-center text-(--content-meta) py-4">评论加载失败，请稍后重试</p>';
+        }
+      });
+
+    // 提交评论
+    var form = document.getElementById('comment-form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = document.getElementById('comment-name').value;
+        var email = document.getElementById('comment-email').value;
+        var content = document.getElementById('comment-content').value;
+        if (!content) { alert('请输入评论内容'); return; }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', commentSubmitUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              if (data.success) {
+                alert('评论提交成功！');
+                document.getElementById('comment-form').reset();
+                location.reload();
+              } else {
+                alert(data.error || '提交失败');
+              }
+            } catch (err) {
+              alert('提交失败，请重试');
+            }
+          }
+        };
+        xhr.send(JSON.stringify({ post_slug: currentSlug, name: name, email: email, content: content }));
+      });
+    }
+  });
+</script>
