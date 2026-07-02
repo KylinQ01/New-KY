@@ -500,7 +500,11 @@ const commentSlug = passedSlug || slug || '/';
         .then(function (res) { return res.json(); })
         .then(function (comments) {
           allComments = comments;
-          renderComments(sortComments(comments));
+          // 过滤出顶级评论（parent_id 为 null 或 0）
+          var topComments = allComments.filter(function (c) {
+            return !c.parent_id || c.parent_id === null || c.parent_id === undefined || parseInt(c.parent_id) === 0;
+          });
+          renderComments(sortComments(topComments));
         })
         .catch(function () {
           var container = document.getElementById('comments-list');
@@ -552,11 +556,14 @@ const commentSlug = passedSlug || slug || '/';
     }
 
     // 渲染单个评论
-    function renderComment(c) {
-      var replies = allComments.filter(function (r) { return r.parent_id === c.id; });
+    function renderComment(c, level = 0) {
+      // 确保 parent_id 和 c.id 类型匹配（都是数字）
+      var replies = allComments.filter(function (r) {
+        return r.parent_id != null && parseInt(r.parent_id) === parseInt(c.id);
+      });
 
       var html = '';
-      html += '<div class="comment-item">';
+      html += '<div class="comment-item" style="margin-left:' + (level * 32) + 'px">';
       html += '<div class="comment-avatar">👤</div>';
       html += '<div class="comment-body">';
       html += '<div class="comment-header-info">';
@@ -574,7 +581,7 @@ const commentSlug = passedSlug || slug || '/';
       if (replies.length > 0) {
         html += '<div class="comment-replies">';
         replies.forEach(function (r) {
-          html += renderComment(r);
+          html += renderComment(r, level + 1);
         });
         html += '</div>';
       }
