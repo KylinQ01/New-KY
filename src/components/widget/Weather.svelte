@@ -18,6 +18,24 @@
 
   export let defaultCity = "";
 
+  // 添加超时处理的 fetch 函数
+  async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        throw new Error('请求超时');
+      }
+      throw err;
+    }
+  }
+
   const cityNameMap = {
     Foshan: "佛山",
     Guangzhou: "广州",
@@ -67,8 +85,10 @@
   async function getCityByCoords(lat, lon, fallbackCity = "") {
     const inferredCity = inferCityByCoords(lat, lon);
     try {
-      const resp = await fetch(
+      const resp = await fetchWithTimeout(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh-CN`,
+        {},
+        3000,
       );
       if (!resp.ok) return inferredCity || fallbackCity || defaultCity || "未知地区";
       const data = await resp.json();
@@ -101,8 +121,10 @@
     try {
       const city = await getCityByCoords(lat, lon, fallbackCity);
 
-      const resp = await fetch(
+      const resp = await fetchWithTimeout(
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,visibility&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=4`,
+        {},
+        5000,
       );
       if (!resp.ok) throw new Error(`weather http ${resp.status}`);
       const data = await resp.json();
@@ -143,14 +165,14 @@
       error = "";
       loading = false;
     } catch (e) {
-      error = "获取天气失败";
+      error = e.message === '请求超时' ? "天气数据获取超时，请稍后重试" : "获取天气失败";
       loading = false;
     }
   }
 
   async function fetchWeatherByIP() {
     try {
-      const ipResp = await fetch("https://ipapi.co/json/");
+      const ipResp = await fetchWithTimeout("https://ipapi.co/json/", {}, 3000);
       if (!ipResp.ok) throw new Error(`ip http ${ipResp.status}`);
       const ipData = await ipResp.json();
       if (ipData.latitude && ipData.longitude) {
@@ -159,7 +181,9 @@
         await fetchWeather(ipData.latitude, ipData.longitude, fallbackCity);
         return;
       }
-    } catch {}
+    } catch {
+      // IP 定位失败，使用默认城市
+    }
     // 优先使用配置的城市，再回退到硬编码默认值
     await fetchWeather(39.9, 116.4, defaultCity || "北京");
   }
@@ -171,11 +195,17 @@
           await fetchWeather(pos.coords.latitude, pos.coords.longitude, "");
         },
         async () => {
+          // 浏览器定位失败，使用 IP 定位
           await fetchWeatherByIP();
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,  // 5 秒超时
+          maximumAge: 0
+        },
       );
     } else {
+      // 浏览器不支持定位，使用 IP 定位
       fetchWeatherByIP();
     }
   });

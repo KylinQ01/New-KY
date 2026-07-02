@@ -228,6 +228,31 @@ if (footerConfig.enable) {
   var b = document.createElement("script");
   b.src = "https://busuanzi.icodeq.com/busuanzi.pure.mini.js";
   b.async = true;
+
+  // 添加超时处理，避免无限等待
+  var timeout = setTimeout(function() {
+    var uvEl = document.getElementById('busuanzi_value_site_uv');
+    if (uvEl && uvEl.textContent === '--') {
+      uvEl.textContent = '---';
+    }
+  }, 3000);
+
+  // 脚本加载成功时清除超时
+  b.onload = function() {
+    clearTimeout(timeout);
+    var uvEl = document.getElementById('busuanzi_value_site_uv');
+    if (uvEl && !uvEl.textContent.match(/\d+/)) {
+      uvEl.textContent = '---';
+    }
+  };
+
+  // 脚本加载失败时处理
+  b.onerror = function() {
+    clearTimeout(timeout);
+    var uvEl = document.getElementById('busuanzi_value_site_uv');
+    if (uvEl) uvEl.textContent = '---';
+  };
+
   document.head.appendChild(b);
 })();
 </script>
