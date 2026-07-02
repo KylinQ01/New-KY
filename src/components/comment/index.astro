@@ -34,9 +34,6 @@ const postTitle = post && "title" in post.data ? post.data.title : undefined;
 
 // 强制commentService类型为string，避免类型不兼容警告
 let commentService: string = commentConfig?.type || "none";
-
-// 为 CustomComment 传递当前文章 slug
-window.__commentSlug = slug;
 ---
 
 {
@@ -60,7 +57,7 @@ window.__commentSlug = slug;
       </div>
       <!-- 评论内容区域 -->
       <div class="relative z-10 pl-2 pr-2">
-        {commentService === "custom" && <CustomComment post={post} />}
+        {commentService === "custom" && <CustomComment post={post} slug={slug} />}
         {commentService === "twikoo" && <Twikoo path={path} />}
         {commentService === "waline" && <Waline path={path} />}
         {commentService === "giscus" && <Giscus />}

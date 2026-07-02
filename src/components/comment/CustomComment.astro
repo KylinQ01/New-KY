@@ -5,11 +5,13 @@ import { removeFileExtension } from "@/utils/url-utils";
 interface Props {
   post?: CollectionEntry<"posts"> | CollectionEntry<"spec">;
   customPath?: string;
+  slug?: string;
 }
 
-const { post, customPath } = Astro.props as Props;
+const { post, customPath, slug: passedSlug } = Astro.props as Props;
 const slugFromPath = (customPath || "/").replace(/^\/+|\/+$/g, "") || "index";
 const slug = post ? removeFileExtension(post.id) : slugFromPath;
+const commentSlug = passedSlug || slug || '/';
 ---
 
 <div id="post-comments" class="card-base p-8 mb-6 relative overflow-hidden">
@@ -50,9 +52,9 @@ const slug = post ? removeFileExtension(post.id) : slugFromPath;
   </div>
 </div>
 
-<script>
+<script define:vars={{ commentSlug }}>
   document.addEventListener('DOMContentLoaded', function () {
-    var currentSlug = window.__commentSlug || '/';
+    var currentSlug = commentSlug || '/';
     var commentApiUrl = 'https://api.kylinqaq.xyz/api/public/comments/' + currentSlug;
     var commentSubmitUrl = 'https://api.kylinqaq.xyz/api/comments';
 
