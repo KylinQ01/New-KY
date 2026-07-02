@@ -113,10 +113,14 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 	},
 	{
 		type: "weather",
-			enable: true,
-			position: "top",
-			showOnPostPage: false,
+		enable: true,
+		position: "top",
+		showOnPostPage: false,
+		specificConfig: {
+			// 默认城市（IP定位不准时用作回退）
+			defaultCity: "深圳",
 		},
+	},
 		{
 			// 组件类型：日期倒计时组件
 			type: "dateCountdown",

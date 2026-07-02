@@ -43,6 +43,7 @@ export type WidgetSpecificConfig = {
 	calendar?: CalendarConfig; // 日历组件专用配置
 	ad?: AdConfig; // 广告组件专用配置
 	siteInfo?: SiteInfoConfig; // 站点信息组件专用配置
+	defaultCity?: string; // 天气组件专用：默认城市名称（IP定位不准时用作回退）
 };
 
 // 站点信息组件专用配置

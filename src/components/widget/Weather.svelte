@@ -16,6 +16,8 @@
     forecast: [],
   };
 
+  export let defaultCity = "";
+
   const cityNameMap = {
     Foshan: "佛山",
     Guangzhou: "广州",
@@ -68,7 +70,7 @@
       const resp = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&accept-language=zh-CN`,
       );
-      if (!resp.ok) return inferredCity || fallbackCity || "未知地区";
+      if (!resp.ok) return inferredCity || fallbackCity || defaultCity || "未知地区";
       const data = await resp.json();
       const addr = data?.address || {};
       const rawCity =
@@ -87,10 +89,11 @@
         inferredCity ||
         cityNameMap[fallbackCity] ||
         fallbackCity ||
+        defaultCity ||
         "未知地区"
       );
     } catch {
-      return inferredCity || cityNameMap[fallbackCity] || fallbackCity || "未知地区";
+      return inferredCity || cityNameMap[fallbackCity] || fallbackCity || defaultCity || "未知地区";
     }
   }
 
@@ -152,12 +155,13 @@
       const ipData = await ipResp.json();
       if (ipData.latitude && ipData.longitude) {
         const rawCity = ipData.city || ipData.region || "";
-        const fallbackCity = cityNameMap[rawCity] || rawCity || inferCityByCoords(ipData.latitude, ipData.longitude);
+        const fallbackCity = cityNameMap[rawCity] || rawCity || inferCityByCoords(ipData.latitude, ipData.longitude) || defaultCity;
         await fetchWeather(ipData.latitude, ipData.longitude, fallbackCity);
         return;
       }
     } catch {}
-    await fetchWeather(39.9, 116.4, "北京");
+    // 优先使用配置的城市，再回退到硬编码默认值
+    await fetchWeather(39.9, 116.4, defaultCity || "北京");
   }
 
   onMount(() => {

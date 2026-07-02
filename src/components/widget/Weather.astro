@@ -11,8 +11,9 @@ interface Props {
 
 const { class: className, style, widgetConfig } = Astro.props;
 const showTitle = widgetConfig?.showTitle !== false;
+const defaultCity = widgetConfig?.specificConfig?.defaultCity || "";
 ---
 
 <WidgetLayout name="天气预报" showTitle={showTitle} id="weather-widget" class={className} style={style}>
-  <WeatherSvelte client:load />
+  <WeatherSvelte client:load defaultCity={defaultCity} />
 </WidgetLayout>
