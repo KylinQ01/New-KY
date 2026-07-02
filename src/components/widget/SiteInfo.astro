@@ -56,11 +56,13 @@ const buildTime = formatDateI18nWithTime(new Date());
 // 构建平台检测（使用 ci-info 自动识别 CI 环境）
 const unknownBuildPlatform =
 	widgetConfig?.specificConfig?.siteInfo?.unknownBuildPlatform || "Unknown CI";
-const buildPlatform = ci.isCI
-	? ci.name || unknownBuildPlatform
-	: import.meta.env.DEV
-		? "Local Dev"
-		: "Local";
+const buildPlatform = siteConfig.deployPlatform
+	? siteConfig.deployPlatform
+	: ci.isCI
+		? ci.name || unknownBuildPlatform
+		: import.meta.env.DEV
+			? "Local Dev"
+			: "Local";
 
 // 系统信息（平台 + 架构）
 const platformMap: Record<string, string> = {
