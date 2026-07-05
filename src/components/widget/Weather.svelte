@@ -407,17 +407,16 @@
           <div class="text-3xl font-black leading-none text-neutral-900 dark:text-neutral-50">
             {weather.temp}°
           </div>
-          <div class="mt-1 flex items-center gap-1.5">
-            <span class="truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+          <div class="mt-1.5 flex items-center gap-1.5">
+            <span class="truncate text-sm font-bold text-neutral-700 dark:text-neutral-300">
               {weather.city}
             </span>
             <button
               type="button"
-              class="shrink-0 text-xs text-(--primary)/70 hover:text-(--primary) transition-colors"
+              class="shrink-0 rounded-md bg-(--primary)/10 px-1.5 py-0.5 text-[10px] font-medium text-(--primary) hover:bg-(--primary)/20 transition-colors"
               on:click={() => { showCitySelector = !showCitySelector; citySearchResults = []; citySearchQuery = ""; }}
-              title="切换城市"
             >
-              📍
+              切换城市
             </button>
           </div>
         </div>
