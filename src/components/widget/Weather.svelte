@@ -263,7 +263,9 @@
 
   function readCityPreference() {
     try {
-      return localStorage.getItem(CITY_CACHE_KEY) || null;
+      const raw = localStorage.getItem(CITY_CACHE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
     } catch {
       return null;
     }
