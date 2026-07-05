@@ -407,22 +407,22 @@
           <div class="text-3xl font-black leading-none text-neutral-900 dark:text-neutral-50">
             {weather.temp}°
           </div>
-          <div class="mt-1.5 flex items-center gap-1.5">
-            <span class="truncate text-sm font-bold text-neutral-700 dark:text-neutral-300">
-              {weather.city}
-            </span>
-            <button
-              type="button"
-              class="shrink-0 rounded-md bg-(--primary)/10 px-1.5 py-0.5 text-[10px] font-medium text-(--primary) hover:bg-(--primary)/20 transition-colors"
-              on:click={() => { showCitySelector = !showCitySelector; citySearchResults = []; citySearchQuery = ""; }}
-            >
-              切换城市
-            </button>
+          <div class="mt-1 truncate text-sm font-bold text-neutral-700 dark:text-neutral-300">
+            {weather.city}
           </div>
         </div>
       </div>
-      <div class="max-w-[7rem] rounded-2xl bg-(--primary)/10 px-3 py-2 text-right text-xs font-medium leading-5 text-(--primary) dark:bg-(--primary)/15">
-        {weather.condition}
+      <div class="flex flex-col items-end gap-1.5">
+        <button
+          type="button"
+          class="rounded-md bg-(--primary)/10 px-2 py-1 text-[10px] font-medium text-(--primary) hover:bg-(--primary)/20 transition-colors"
+          on:click={() => { showCitySelector = !showCitySelector; citySearchResults = []; citySearchQuery = ""; }}
+        >
+          切换城市
+        </button>
+        <div class="max-w-[7rem] rounded-2xl bg-(--primary)/10 px-3 py-2 text-right text-xs font-medium leading-5 text-(--primary) dark:bg-(--primary)/15">
+          {weather.condition}
+        </div>
       </div>
     </div>
 
