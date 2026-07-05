@@ -4,6 +4,11 @@
   let expanded = false;
   let loading = true;
   let error = "";
+  let showCitySelector = false;
+  let citySearchQuery = "";
+  let citySearchResults = [];
+  let citySearchLoading = false;
+  let manualMode = false; // 用户手动选择城市后不再自动定位
   let weather = {
     city: "--",
     temp: "--",
@@ -170,38 +175,210 @@
     }
   }
 
+  // IP 定位服务列表（按优先级排列，失败自动切换到下一个）
+  const ipGeoServices = [
+    // ipwho.is — 免费，无需 key，无 rate limit，返回经纬度
+    {
+      url: "https://ipwho.is/",
+      parse: (d) => ({
+        lat: d.latitude,
+        lon: d.longitude,
+        city: d.city || d.region || "",
+      }),
+    },
+    // ipinfo.io — 免费 50k/月
+    {
+      url: "https://ipinfo.io/json",
+      parse: (d) => {
+        const [lat, lon] = (d.loc || "").split(",").map(Number);
+        return { lat, lon, city: d.city || d.region || "" };
+      },
+    },
+    // ip-api.com — 免费 45/min，HTTP only
+    {
+      url: "http://ip-api.com/json/?lang=zh-CN",
+      parse: (d) => ({
+        lat: d.lat,
+        lon: d.lon,
+        city: d.city || d.regionName || "",
+      }),
+    },
+  ];
+
   async function fetchWeatherByIP() {
-    try {
-      const ipResp = await fetchWithTimeout("https://ipapi.co/json/", {}, 3000);
-      if (!ipResp.ok) throw new Error(`ip http ${ipResp.status}`);
-      const ipData = await ipResp.json();
-      if (ipData.latitude && ipData.longitude) {
-        const rawCity = ipData.city || ipData.region || "";
-        const fallbackCity = cityNameMap[rawCity] || rawCity || inferCityByCoords(ipData.latitude, ipData.longitude) || defaultCity;
-        await fetchWeather(ipData.latitude, ipData.longitude, fallbackCity);
-        return;
+    for (const svc of ipGeoServices) {
+      try {
+        const resp = await fetchWithTimeout(svc.url, {}, 3000);
+        if (!resp.ok) continue;
+        const data = await resp.json();
+        const { lat, lon, city: rawCity } = svc.parse(data);
+        if (lat && lon) {
+          const resolvedCity =
+            cityNameMap[rawCity] ||
+            rawCity ||
+            inferCityByCoords(lat, lon) ||
+            defaultCity ||
+            "未知地区";
+          writeCache(resolvedCity, lat, lon);
+          await fetchWeather(lat, lon, resolvedCity);
+          return;
+        }
+      } catch {
+        // 当前服务失败，尝试下一个
       }
-    } catch {
-      // IP 定位失败，使用默认城市
     }
-    // 优先使用配置的城市，再回退到硬编码默认值
-    await fetchWeather(39.9, 116.4, defaultCity || "北京");
+    // 所有 IP 定位服务都失败，使用默认城市
+    const fallbackCity = defaultCity || "佛山";
+    writeCache(fallbackCity, 23.1, 113.3);
+    await fetchWeather(23.1, 113.3, fallbackCity);
   }
 
-  onMount(() => {
+  // 缓存天气数据到 localStorage（有效期 1 小时）
+  const CACHE_KEY = "firefly_weather_cache";
+  const CACHE_TTL = 60 * 60 * 1000; // 1 小时
+
+  function readCache() {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const cached = JSON.parse(raw);
+      if (Date.now() - cached.ts > CACHE_TTL) return null;
+      return cached;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeCache(city, lat, lon) {
+    try {
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ city, lat, lon, ts: Date.now() })
+      );
+    } catch {}
+  }
+
+  // 城市定位缓存（独立于天气缓存）
+  const CITY_CACHE_KEY = "firefly_weather_city";
+
+  function readCityPreference() {
+    try {
+      return localStorage.getItem(CITY_CACHE_KEY) || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeCityPreference(city, lat, lon) {
+    try {
+      localStorage.setItem(
+        CITY_CACHE_KEY,
+        JSON.stringify({ city, lat, lon })
+      );
+    } catch {}
+  }
+
+  async function searchCities(query) {
+    if (!query || query.length < 2) {
+      citySearchResults = [];
+      return;
+    }
+    citySearchLoading = true;
+    try {
+      const resp = await fetchWithTimeout(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=zh&format=json`,
+        {},
+        3000
+      );
+      if (!resp.ok) throw new Error("search failed");
+      const data = await resp.json();
+      citySearchResults = (data.results || []).map((r) => ({
+        name: r.name + (r.admin1 ? `, ${r.admin1}` : "") + (r.country ? `, ${r.country}` : ""),
+        lat: r.latitude,
+        lon: r.longitude,
+      }));
+    } catch {
+      citySearchResults = [];
+    } finally {
+      citySearchLoading = false;
+    }
+  }
+
+  async function selectCity(city, lat, lon) {
+    manualMode = true;
+    writeCityPreference(city, lat, lon);
+    showCitySelector = false;
+    citySearchQuery = "";
+    citySearchResults = [];
+    loading = true;
+    await fetchWeather(lat, lon, city);
+  }
+
+  async function resetToAuto() {
+    manualMode = false;
+    try {
+      localStorage.removeItem(CITY_CACHE_KEY);
+      localStorage.removeItem(CACHE_KEY);
+    } catch {}
+    loading = true;
+    error = "";
+    // 重新触发定位
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          await fetchWeather(pos.coords.latitude, pos.coords.longitude, "");
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const city =
+            inferCityByCoords(lat, lon) ||
+            (await getCityByCoords(lat, lon, defaultCity));
+          writeCache(city, lat, lon);
+          await fetchWeather(lat, lon, city);
+        },
+        async () => {
+          await fetchWeatherByIP();
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 30 * 60 * 1000 }
+      );
+    } else {
+      await fetchWeatherByIP();
+    }
+  }
+
+  onMount(() => {
+    // 优先使用用户手动选择的城市
+    const cityPref = readCityPreference();
+    if (cityPref) {
+      manualMode = true;
+      fetchWeather(cityPref.lat, cityPref.lon, cityPref.city);
+      return;
+    }
+
+    // 先检查缓存
+    const cached = readCache();
+    if (cached && cached.lat && cached.lon && !import.meta.env.DEV) {
+      fetchWeather(cached.lat, cached.lon, cached.city);
+      return;
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const city =
+            inferCityByCoords(lat, lon) ||
+            (await getCityByCoords(lat, lon, defaultCity));
+          writeCache(city, lat, lon);
+          await fetchWeather(lat, lon, city);
         },
         async () => {
           // 浏览器定位失败，使用 IP 定位
           await fetchWeatherByIP();
         },
         {
-          enableHighAccuracy: true,
-          timeout: 5000,  // 5 秒超时
-          maximumAge: 0
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 30 * 60 * 1000,
         },
       );
     } else {
@@ -230,8 +407,18 @@
           <div class="text-3xl font-black leading-none text-neutral-900 dark:text-neutral-50">
             {weather.temp}°
           </div>
-          <div class="mt-1 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
-            {weather.city}
+          <div class="mt-1 flex items-center gap-1.5">
+            <span class="truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+              {weather.city}
+            </span>
+            <button
+              type="button"
+              class="shrink-0 text-xs text-(--primary)/70 hover:text-(--primary) transition-colors"
+              on:click={() => { showCitySelector = !showCitySelector; citySearchResults = []; citySearchQuery = ""; }}
+              title="切换城市"
+            >
+              📍
+            </button>
           </div>
         </div>
       </div>
@@ -258,6 +445,49 @@
         <div class="mt-1 text-sm font-bold text-neutral-900 dark:text-neutral-100">{weather.visibility} km</div>
       </div>
     </div>
+
+    <!-- 城市选择面板 -->
+    {#if showCitySelector}
+      <div class="border-t border-black/5 px-3 py-3 dark:border-white/10">
+        <div class="flex items-center gap-2">
+          <input
+            type="text"
+            bind:value={citySearchQuery}
+            placeholder="搜索城市..."
+            class="flex-1 rounded-lg border border-black/10 bg-white/70 px-3 py-1.5 text-xs text-neutral-800 outline-none focus:border-(--primary) dark:border-white/10 dark:bg-white/5 dark:text-neutral-200"
+            on:input={() => searchCities(citySearchQuery)}
+          />
+          {#if manualMode}
+            <button
+              type="button"
+              class="shrink-0 rounded-lg bg-(--primary)/10 px-2 py-1.5 text-xs text-(--primary) hover:bg-(--primary)/20 transition-colors"
+              on:click={resetToAuto}
+            >
+              自动
+            </button>
+          {/if}
+        </div>
+        {#if citySearchLoading}
+          <p class="mt-2 text-center text-xs text-neutral-400">搜索中...</p>
+        {:else if citySearchResults.length > 0}
+          <ul class="mt-2 space-y-1">
+            {#each citySearchResults as city}
+              <li>
+                <button
+                  type="button"
+                  class="w-full rounded-lg px-3 py-1.5 text-left text-xs text-neutral-700 hover:bg-(--primary)/10 dark:text-neutral-300 transition-colors"
+                  on:click={() => selectCity(city.name, city.lat, city.lon)}
+                >
+                  {city.name}
+                </button>
+              </li>
+            {/each}
+          </ul>
+        {:else if citySearchQuery.length >= 2}
+          <p class="mt-2 text-center text-xs text-neutral-400">未找到相关城市</p>
+        {/if}
+      </div>
+    {/if}
 
     <div class="border-t border-black/5 px-3 pb-3 pt-2 dark:border-white/10">
       <button
