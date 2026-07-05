@@ -83,7 +83,7 @@ if (footerConfig.enable) {
     <!-- 访客计数 -->
     <div id="visitor-counter" class="mt-4 flex gap-1.5 justify-center flex-wrap text-xs text-neutral-400 dark:text-neutral-500">
       <span>👋 您是第</span>
-      <span id="busuanzi_value_site_uv" class="font-bold text-(--primary)" style="font-size:1.1em">--</span>
+      <span id="site-visit-count" class="font-bold text-(--primary)" style="font-size:1.1em">--</span>
       <span>位来访者</span>
     </div>
 
@@ -225,34 +225,41 @@ if (footerConfig.enable) {
 
 <script is:inline>
 (function() {
-  var b = document.createElement("script");
-  b.src = "https://busuanzi.icodeq.com/busuanzi.pure.mini.js";
-  b.async = true;
+  var API = 'https://api.kylinqaq.xyz/api/public/visit';
+  var el = document.getElementById('site-visit-count');
+  if (!el) return;
 
-  // 添加超时处理，避免无限等待
-  var timeout = setTimeout(function() {
-    var uvEl = document.getElementById('busuanzi_value_site_uv');
-    if (uvEl && uvEl.textContent === '--') {
-      uvEl.textContent = '---';
-    }
-  }, 3000);
+  // 用 sessionStorage 防重复计数：同一次会话只计一次
+  var countedKey = 'firefly_visit_counted';
+  var shouldCount = !sessionStorage.getItem(countedKey);
 
-  // 脚本加载成功时清除超时
-  b.onload = function() {
-    clearTimeout(timeout);
-    var uvEl = document.getElementById('busuanzi_value_site_uv');
-    if (uvEl && !uvEl.textContent.match(/\d+/)) {
-      uvEl.textContent = '---';
-    }
-  };
+  function updateDisplay(total) {
+    if (el) el.textContent = total.toLocaleString();
+  }
 
-  // 脚本加载失败时处理
-  b.onerror = function() {
-    clearTimeout(timeout);
-    var uvEl = document.getElementById('busuanzi_value_site_uv');
-    if (uvEl) uvEl.textContent = '---';
-  };
+  function onError() {
+    if (el) el.textContent = '✨';
+  }
 
-  document.head.appendChild(b);
+  // 先尝试计数（POST），再获取总数（GET）
+  if (shouldCount) {
+    fetch(API, { method: 'POST' })
+      .then(function(r) { if (!r.ok) throw new Error('post fail'); return r.json(); })
+      .then(function(data) {
+        sessionStorage.setItem(countedKey, '1');
+        updateDisplay(data.total || 0);
+      })
+      .catch(function() {
+        // POST 失败，尝试直接 GET
+        fetch(API).then(function(r) { return r.json(); }).then(function(data) {
+          updateDisplay(data.total || 0);
+        }).catch(onError);
+      });
+  } else {
+    // 本已计数过，直接获取总数
+    fetch(API).then(function(r) { return r.json(); }).then(function(data) {
+      updateDisplay(data.total || 0);
+    }).catch(onError);
+  }
 })();
 </script>
