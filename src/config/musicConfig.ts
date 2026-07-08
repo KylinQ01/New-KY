@@ -9,7 +9,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 
 	// API 模式下从后端获取播放列表
 	api: {
-		url: "/api/public/songs",
+		url: "https://api.kylinqaq.xyz/api/public/songs",
 	},
 
 	meting: {
