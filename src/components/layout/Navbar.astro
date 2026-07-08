@@ -119,8 +119,19 @@ if (isLocalSrcLogo) {
                     {navbarTitle}
                 </div>
             </a>
-            <div class:list={["hidden lg:flex items-center space-x-1 col-start-2", isNavbarMenuCentered ? "justify-center" : "justify-start pl-2"]}>
-                {links.map((l) => <DropdownMenu link={l} />)}
+            <div class:list={["hidden lg:flex items-center col-start-2", isNavbarMenuCentered ? "justify-center" : "justify-start pl-2"]}>
+                <nav class="glass-nav" id="glass-nav">
+                    {links.filter(l => !l.children?.length).map((l, i) => (
+                        <a href={url(l.url)} class="glass-nav-item" data-index={i} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined}>
+                            <span>{l.name}</span>
+                        </a>
+                    ))}
+                    <div class="glass-nav-slider" aria-hidden="true"></div>
+                </nav>
+                <!-- Dropdown menus for items with children */}
+                {links.filter(l => l.children?.length).map((l) => (
+                    <DropdownMenu link={l} />
+                ))}
             </div>
             <div class="flex col-start-3 justify-self-end">
                 <Search client:load />
@@ -255,10 +266,122 @@ loadButtonScript();
     document.documentElement.classList.add("easter-theme");
   }
 })();
+
+// ---- Glass Nav Slider ----
+(function initGlassNav() {
+  const nav = document.getElementById("glass-nav");
+  if (!nav) return;
+  const items = nav.querySelectorAll(".glass-nav-item");
+  const slider = nav.querySelector(".glass-nav-slider");
+  if (!items.length || !slider) return;
+
+  // Set slider width based on item count
+  slider.style.setProperty("--item-num", items.length);
+
+  function updateSlider() {
+    const active = nav.querySelector(".glass-nav-item.active");
+    if (!active) return;
+    const idx = Number(active.dataset.index);
+    slider.style.transform = `translateX(${idx * 100}%)`;
+  }
+
+  // Set active item based on current URL
+  const currentPath = location.pathname;
+  let bestMatch = null;
+  let bestLength = -1;
+  items.forEach((item) => {
+    const href = item.getAttribute("href") || "";
+    item.classList.remove("active");
+    if (currentPath === href || (href.length > 1 && currentPath.startsWith(href))) {
+      if (href.length > bestLength) {
+        bestLength = href.length;
+        bestMatch = item;
+      }
+    }
+  });
+  if (bestMatch) bestMatch.classList.add("active");
+  updateSlider();
+
+  // Click handler for manual activation
+  items.forEach((item) => {
+    item.addEventListener("click", () => {
+      items.forEach((i) => i.classList.remove("active"));
+      item.classList.add("active");
+      updateSlider();
+    });
+  });
+})();
 </script>
 
 <style is:global>
   .easter-theme {
     --hue: 312 !important;
+  }
+
+  /* ---- Glass Navigation ---- */
+  .glass-nav {
+    --nav-bg: rgba(255, 255, 255, 0.06);
+    --nav-text: #c8cee0;
+    --nav-radius: 0.75rem;
+    --slider-color: linear-gradient(135deg, color-mix(in oklch, var(--primary) 70%, #fff), var(--primary));
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: var(--nav-bg);
+    border-radius: var(--nav-radius);
+    backdrop-filter: blur(12px);
+    box-shadow:
+      inset 1px 1px 4px rgba(255, 255, 255, 0.2),
+      inset -1px -1px 6px rgba(0, 0, 0, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    padding: 3px;
+  }
+
+  .glass-nav-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px;
+    font-size: 13px;
+    padding: 0.55rem 1.2rem;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--nav-text);
+    position: relative;
+    z-index: 2;
+    transition: color 0.3s ease-in-out;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .glass-nav-item:hover {
+    color: #fff;
+  }
+
+  .glass-nav-item.active {
+    color: #fff;
+  }
+
+  .glass-nav-slider {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / var(--item-num, 3));
+    border-radius: calc(var(--nav-radius) - 3px);
+    z-index: 1;
+    background: var(--slider-color);
+    box-shadow:
+      0 0 12px color-mix(in oklch, var(--primary) 60%, transparent),
+      inset 0 0 6px rgba(255, 255, 255, 0.2);
+    transition: transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56);
+    pointer-events: none;
+  }
+
+  :root.dark .glass-nav {
+    background: rgba(255, 255, 255, 0.04);
   }
 </style>
