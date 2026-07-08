@@ -51,67 +51,110 @@ const className = Astro.props.class;
     <div class="text-center text-neutral-400 mb-2.5 transition">
       {profileConfig.bio}
     </div>
-        <div class="flex flex-wrap gap-2 justify-center mb-1">
-            {profileConfig.links.length > 1 && profileConfig.links.map(item =>
-                    {
-                    const showName = item.showName;
-                    const className = showName 
-                        ? "btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95" 
-                        : "btn-regular rounded-lg h-10 w-10 active:scale-90";
-
-                    if (item.url.startsWith("mailto:")) {
-                        const encodedEmail = Buffer.from(item.url.replace("mailto:", "")).toString("base64");
-                        return <a rel="me" aria-label={item.name} href="#" data-encoded-email={encodedEmail} onclick={`
-                                            (function() {
-                                                const encodedEmail = this.getAttribute('data-encoded-email');
-                                                const decodedEmail = atob(encodedEmail);
-                                                this.href = 'mailto:' + decodedEmail;
-                                                this.removeAttribute('data-encoded-email');
-                                                this.removeAttribute('onclick');
-                                                this.click();
-                                                return false;
-                                            }).call(this);
-                                        `.replace(/\s+/g, " ").trim()
-                                    },
-                                    class={className}>
-                            <Icon is:inline name={item.icon} class="text-[1.5rem]"></Icon>
-                            {showName && item.name}
+        <ul class="social-links">
+            {profileConfig.links.map((item) => {
+                const brand = item.color || { qq: '#12B7F5', GitHub: '#333', 抖音: '#fe2c55', RSS: '#f26522' }[item.name] || '#4f6ef7';
+                const isMail = item.url.startsWith("mailto:");
+                const href = isMail ? "#" : item.url;
+                const encodedEmail = isMail ? Buffer.from(item.url.replace("mailto:", "")).toString("base64") : "";
+                const mailHandler = isMail ? `
+                    (function() {
+                        const e = this.getAttribute('data-encoded-email');
+                        this.href = 'mailto:' + atob(e);
+                        this.removeAttribute('data-encoded-email');
+                        this.removeAttribute('onclick');
+                        this.click();
+                        return false;
+                    }).call(this);
+                `.replace(/\s+/g, " ").trim() : undefined;
+                return (
+                    <li class="social-icon" style={`--brand-color: ${brand}`}>
+                        <span class="social-tooltip">{item.name}</span>
+                        <a rel="me" aria-label={item.name} href={href} target={isMail ? undefined : "_blank"} data-encoded-email={encodedEmail} onclick={mailHandler} class="social-link">
+                            <Icon is:inline name={item.icon} class="text-[1.25rem]"></Icon>
                         </a>
-                    } else {
-                        return <a rel="me" aria-label={item.name} href={item.url} target="_blank" class={className}>
-                            <Icon is:inline name={item.icon} class="text-[1.5rem]"></Icon>
-                            {showName && item.name}
-                        </a>
-                    }
-                    }
-            )}
-            {profileConfig.links.length == 1 && (function(item){
-                if (item.url.startsWith("mailto:")) {
-                        const encodedEmail = Buffer.from(item.url.replace("mailto:", "")).toString("base64");
-                        return <a rel="me" aria-label={item.name} href="#" data-encoded-email={encodedEmail} onclick={`
-                                            (function() {
-                                                const encodedEmail = this.getAttribute('data-encoded-email');
-                                                const decodedEmail = atob(encodedEmail);
-                                                this.href = 'mailto:' + decodedEmail;
-                                                this.removeAttribute('data-encoded-email');
-                                                this.removeAttribute('onclick');
-                                                this.click();
-                                                return false;
-                                            }).call(this);
-                                        `.replace(/\s+/g, " ").trim()
-                                    },
-                                    class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
-                            <Icon is:inline name={item.icon} class="text-[1.5rem]"></Icon>
-                            {item.name}
-                        </a>
-                    } else {
-                        return <a rel="me" aria-label={item.name} href={item.url} target="_blank"
-                                            class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
-                                <Icon is:inline name={item.icon} class="text-[1.5rem]"></Icon>
-                                {item.name}
-                            </a>
-                    }
-            })(profileConfig.links[0])}
-        </div>
+                    </li>
+                );
+            })}
+        </ul>
   </div>
 </div>
+
+<style>
+  /* ---- 社交按钮 (Uiverse.io inspired) ---- */
+  .social-links {
+    display: inline-flex;
+    flex-wrap: wrap;
+    list-style: none;
+    gap: 14px;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+  }
+
+  .social-icon {
+    position: relative;
+    width: 44px;
+    height: 44px;
+  }
+
+  .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--card-bg, #fff);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    text-decoration: none;
+    color: var(--text-main, #333);
+  }
+
+  .social-icon:hover .social-link {
+    transform: translateY(-5px) scale(1.08);
+    background: var(--brand-color, var(--primary));
+    color: #fff;
+    box-shadow: 0 8px 20px color-mix(in oklch, var(--brand-color, var(--primary)) 40%, transparent);
+  }
+
+  /* Tooltip */
+  .social-tooltip {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    font-size: 11px;
+    font-weight: 600;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  .social-tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: #1a1a2e;
+  }
+
+  .social-icon:hover .social-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+
+  /* 品牌色由 style="--brand-color: xxx" 内联设置 */
+</style>

@@ -26,24 +26,28 @@ export const profileConfig: ProfileConfig = {
 			icon: "fa7-brands:qq",
 			url: "https://qm.qq.com/cgi-bin/qm/qr?k=2686536946",
 			showName: false,
+			color: "#12B7F5",
 		},
 		{
 			name: "GitHub",
 			icon: "fa7-brands:github",
 			url: "https://github.com/KylinQ01",
 			showName: false,
+			color: "#333333",
 		},
 		{
 			name: "抖音",
 			icon: "simple-icons:tiktok",
 			url: "https://www.douyin.com/user/self",
 			showName: false,
+			color: "#fe2c55",
 		},
 		{
 			name: "RSS",
 			icon: "fa7-solid:rss",
 			url: "/rss/",
 			showName: false,
+			color: "#f26522",
 		},
 	],
 };
