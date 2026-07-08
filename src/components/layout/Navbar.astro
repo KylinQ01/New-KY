@@ -124,17 +124,19 @@ if (isLocalSrcLogo) {
             </a>
             <div class:list={["hidden lg:flex items-center col-start-2", isNavbarMenuCentered ? "justify-center" : "justify-start pl-2"]}>
                 <nav class="glass-nav" id="glass-nav">
-                    {simpleLinks.map((l, i) => (
-                        <a href={url(l.url)} class="glass-nav-item" data-index={i} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined}>
-                            <span>{l.name}</span>
-                        </a>
-                    ))}
+                    {simpleLinks.map((l, i) => {
+                        return (
+                            <a href={url(l.url)} class="glass-nav-item" data-index={i} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined}>
+                                <span>{l.name}</span>
+                            </a>
+                        );
+                    })}
                     <div class="glass-nav-slider" aria-hidden="true"></div>
                 </nav>
-                <!-- Dropdown menus for items with children */}
-                {dropdownLinks.map((l) => (
-                    <DropdownMenu link={l} />
-                ))}
+                <!-- Dropdown menus for items with children -->
+                {dropdownLinks.map((l) => {
+                    return <DropdownMenu link={l} />;
+                })}
             </div>
             <div class="flex col-start-3 justify-self-end">
                 <Search client:load />
