@@ -69,6 +69,9 @@ let links: NavBarLink[] = navBarConfig.links
 	.map(filterLinks)
 	.filter((link): link is NavBarLink => link !== null);
 
+const simpleLinks = links.filter((l) => !l.children || l.children.length === 0);
+const dropdownLinks = links.filter((l) => l.children && l.children.length > 0);
+
 const logoValue = siteConfig.navbar.logo?.value || "";
 const isLocalSrcLogo =
 	siteConfig.navbar.logo?.type === "image" &&
@@ -121,7 +124,7 @@ if (isLocalSrcLogo) {
             </a>
             <div class:list={["hidden lg:flex items-center col-start-2", isNavbarMenuCentered ? "justify-center" : "justify-start pl-2"]}>
                 <nav class="glass-nav" id="glass-nav">
-                    {links.filter(l => !l.children?.length).map((l, i) => (
+                    {simpleLinks.map((l, i) => (
                         <a href={url(l.url)} class="glass-nav-item" data-index={i} target={l.external ? "_blank" : undefined} rel={l.external ? "noopener noreferrer" : undefined}>
                             <span>{l.name}</span>
                         </a>
@@ -129,7 +132,7 @@ if (isLocalSrcLogo) {
                     <div class="glass-nav-slider" aria-hidden="true"></div>
                 </nav>
                 <!-- Dropdown menus for items with children */}
-                {links.filter(l => l.children?.length).map((l) => (
+                {dropdownLinks.map((l) => (
                     <DropdownMenu link={l} />
                 ))}
             </div>
