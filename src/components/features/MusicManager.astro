@@ -128,6 +128,25 @@ const managerConfigStr = JSON.stringify({
         window.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
     }
 
+    // ── API fetch（从后端数据库获取）──────────────────────────
+    async function fetchApiData() {
+        var apiUrl = config.api?.url || '/api/public/songs';
+        var res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var json = await res.json();
+        var data = json.data || json;
+        if (!Array.isArray(data) || data.length === 0) throw new Error('No songs');
+        state.playlist = data.map(function (item) {
+            return {
+                name: item.name || 'Unknown',
+                artist: item.artist || '',
+                url: item.url,
+                pic: item.cover || item.pic || '',
+                lrc: item.lrc || ''
+            };
+        });
+    }
+
     // ── Meting fetch ─────────────────────────────────────────
     async function fetchMetingData() {
         if (!config.meting) return;
@@ -357,6 +376,8 @@ const managerConfigStr = JSON.stringify({
         try {
             if (config.mode === 'meting' && config.meting) {
                 await fetchMetingData();
+            } else if (config.mode === 'api') {
+                await fetchApiData();
             } else if (config.mode === 'local') {
                 state.playlist = config.localPlaylist || [];
             }
