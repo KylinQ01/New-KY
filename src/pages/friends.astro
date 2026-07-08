@@ -120,16 +120,53 @@ const description =
               target="_blank"
               rel="noopener noreferrer"
               data-tags={item.tags?.join(",")}
-              data-name={item.title}
-              style={"--hug-color: " + (item.color || '#4f6ef7')}
-              class="friend-card"
-              title={item.title}
+              class="friend-card group flex items-center gap-3 p-2.5 rounded-xl border border-(--line-divider) hover:border-(--primary) hover:bg-(--card-bg) transition-all duration-300 hover:shadow-lg relative overflow-hidden"
             >
-              <img
-                src={item.imgurl}
-                alt={item.title}
-                loading="lazy"
-              />
+              {/* 背景装饰 - 仅悬停显示 */}
+              <div class="absolute inset-0 bg-(--primary) opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none" />
+
+              {/* 头像 */}
+              <div class="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-black/5 dark:border-white/5 group-hover:scale-105 transition-transform duration-300">
+                <img
+                  src={item.imgurl}
+                  alt={item.title}
+                  class="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 内容 */}
+              <div class="grow min-w-0 flex flex-col justify-center gap-0.5">
+                <div class="flex items-center justify-between">
+                  <div class="font-bold text-base text-neutral-900 dark:text-neutral-100 group-hover:text-(--primary) transition-colors truncate pr-4">
+                    {item.title}<span class="status-dot ml-2 inline-block size-2 shrink-0 rounded-full bg-neutral-300 dark:bg-neutral-600" data-url={item.siteurl} title="检测中..."></span>
+                  </div>
+                  {/* 外部链接图标 */}
+                  <Icon is:inline
+                    name="material-symbols:arrow-outward-rounded"
+                    class="text-(--primary) text-lg opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+                  />
+                </div>
+
+                <div
+                  class="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-1"
+                  title={item.desc}
+                >
+                  {item.desc}
+                </div>
+
+                {/* 标签 */}
+                <div class="flex flex-wrap gap-1 mt-1">
+                  {item.tags && item.tags.length > 0
+                    ? item.tags
+                        .slice(0, 3)
+                        .map((tag) => (
+                          <span class="text-[0.65rem] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors duration-300">
+                            {tag}
+                          </span>
+                        ))
+                    : null}
+                </div>
+              </div>
             </a>
           ))
         }
@@ -273,114 +310,9 @@ const description =
 
   <style is:global>
     .friends-grid {
-      display: inline-flex;
-      flex-wrap: wrap;
-      list-style: none;
-      width: 100%;
-      padding-top: 20px;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    /* ---- 社交按钮 ---- */
-    .friend-card {
-      position: relative;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: var(--surface, #fff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      overflow: visible;
-      padding: 0;
-      border: 2px solid transparent;
-      text-decoration: none;
-    }
-
-    .friend-card:hover {
-      transform: translateY(-6px) scale(1.08);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
-    }
-
-    .friend-card img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
-
-    .friend-card:hover img {
-      transform: scale(0.92);
-    }
-
-    /* Tooltip */
-    .friend-card::after {
-      content: attr(data-name);
-      position: absolute;
-      top: -42px;
-      left: 50%;
-      transform: translateX(-50%) scale(0.8);
-      font-size: 12px;
-      font-weight: 500;
-      background: #1a1a2e;
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 8px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 10;
-    }
-
-    .friend-card::before {
-      content: "";
-      position: absolute;
-      top: -8px;
-      left: 50%;
-      transform: translateX(-50%) rotate(45deg);
-      width: 8px;
-      height: 8px;
-      background: #1a1a2e;
-      opacity: 0;
-      transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      z-index: 10;
-    }
-
-    .friend-card:hover::after {
-      opacity: 1;
-      transform: translateX(-50%) scale(1);
-    }
-
-    .friend-card:hover::before {
-      opacity: 1;
-    }
-
-    /* Brand color hug effect */
-    .friend-card::after {
-      background: var(--hug-color, #1a1a2e);
-    }
-    .friend-card::before {
-      background: var(--hug-color, #1a1a2e);
-    }
-    .friend-card:hover {
-      border-color: var(--hug-color, #1a1a2e);
-      box-shadow: 0 12px 28px color-mix(in oklch, var(--hug-color, rgba(0,0,0,0.1)) 40%, transparent);
-    }
-
-    /* Dark mode */
-    :root.dark .friend-card {
-      background: #1e2235;
-      border-color: rgba(255,255,255,0.08);
-    }
-    :root.dark .friend-card:hover {
-      border-color: var(--hug-color, rgba(255,255,255,0.3));
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 0.75rem;
     }
   </style>
 </MainGridLayout>
