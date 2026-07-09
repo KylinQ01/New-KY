@@ -2,14 +2,10 @@ import type { MusicPlayerConfig } from "../types/musicConfig";
 
 export const musicPlayerConfig: MusicPlayerConfig = {
 	showInNavbar: true,
-	mode: "api",
+	mode: "local",
 	volume: 0.7,
 	playMode: "list",
 	showLyrics: true,
-
-	api: {
-		url: "https://api.kylinqaq.xyz/api/public/songs",
-	},
 
 	meting: {
 		api: "https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&r=:r",
