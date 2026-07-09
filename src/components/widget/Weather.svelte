@@ -141,7 +141,7 @@
       const city = await getCityByCoords(lat, lon, fallbackCity);
       const resp = await fetchWithTimeout(
         `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,visibility&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=4`,
-        {}, 5000,
+        {}, 10000,
       );
       if (!resp.ok) throw new Error(`weather http ${resp.status}`);
       const data = await resp.json();
@@ -184,22 +184,35 @@
   }
 
   async function fetchWeatherByIP() {
+    // 1. 浏览器定位（仅 HTTPS/localhost 可用）
+    if (navigator.geolocation) {
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
+        });
+        const city = inferCityByCoords(pos.coords.latitude, pos.coords.longitude) || defaultCity || "佛山";
+        writeCache(city, pos.coords.latitude, pos.coords.longitude);
+        await fetchWeather(pos.coords.latitude, pos.coords.longitude, city);
+        return;
+      } catch { /* 定位失败，走 IP */ }
+    }
+    // 2. IP 定位（所有环境可用）
     try {
       const resp = await fetchWithTimeout("https://ipwho.is/", {}, 3000);
       if (resp.ok) {
         const data = await resp.json();
         if (data.latitude && data.longitude) {
-          const rawCity = data.city || data.region || "";
-          const resolvedCity = cityNameMap[rawCity] || rawCity || inferCityByCoords(data.latitude, data.longitude) || defaultCity || "佛山";
-          writeCache(resolvedCity, data.latitude, data.longitude);
-          await fetchWeather(data.latitude, data.longitude, resolvedCity);
+          const city = cityNameMap[data.city || ""] || data.city || data.region || defaultCity || "佛山";
+          writeCache(city, data.latitude, data.longitude);
+          await fetchWeather(data.latitude, data.longitude, city);
           return;
         }
       }
-    } catch { /* 定位失败，用默认城市 */ }
-    const fallbackCity = defaultCity || "佛山";
-    writeCache(fallbackCity, 23.1, 113.3);
-    await fetchWeather(23.1, 113.3, fallbackCity);
+    } catch { /* 失败走默认 */ }
+    // 3. 默认城市
+    const city = defaultCity || "佛山";
+    writeCache(city, 23.1, 113.3);
+    await fetchWeather(23.1, 113.3, city);
   }
 
   const CACHE_KEY = "firefly_weather_cache";
@@ -284,18 +297,7 @@
     if (cityPref) { manualMode = true; fetchWeather(cityPref.lat, cityPref.lon, cityPref.city); return; }
     const cached = readCache();
     if (cached && cached.lat && cached.lon && !import.meta.env.DEV) { fetchWeather(cached.lat, cached.lon, cached.city); return; }
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const la = pos.coords.latitude, lo = pos.coords.longitude;
-          const c = inferCityByCoords(la, lo) || (await getCityByCoords(la, lo, defaultCity));
-          writeCache(c, la, lo);
-          await fetchWeather(la, lo, c);
-        },
-        async () => { await fetchWeatherByIP(); },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 30 * 60 * 1000 },
-      );
-    } else { fetchWeatherByIP(); }
+    fetchWeatherByIP();
   });
 </script>
 
