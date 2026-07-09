@@ -183,27 +183,20 @@
     }
   }
 
-  const ipGeoServices = [
-    { url: "https://ipwho.is/", parse: (d) => ({ lat: d.latitude, lon: d.longitude, city: d.city || d.region || "" }) },
-    { url: "https://ipinfo.io/json", parse: (d) => { const [la, lo] = (d.loc || "").split(",").map(Number); return { lat: la, lon: lo, city: d.city || d.region || "" }; } },
-    { url: "http://ip-api.com/json/?lang=zh-CN", parse: (d) => ({ lat: d.lat, lon: d.lon, city: d.city || d.regionName || "" }) },
-  ];
-
   async function fetchWeatherByIP() {
-    for (const svc of ipGeoServices) {
-      try {
-        const resp = await fetchWithTimeout(svc.url, {}, 3000);
-        if (!resp.ok) continue;
+    try {
+      const resp = await fetchWithTimeout("https://ipwho.is/", {}, 3000);
+      if (resp.ok) {
         const data = await resp.json();
-        const { lat, lon, city: rawCity } = svc.parse(data);
-        if (lat && lon) {
-          const resolvedCity = cityNameMap[rawCity] || rawCity || inferCityByCoords(lat, lon) || defaultCity || "未知地区";
-          writeCache(resolvedCity, lat, lon);
-          await fetchWeather(lat, lon, resolvedCity);
+        if (data.latitude && data.longitude) {
+          const rawCity = data.city || data.region || "";
+          const resolvedCity = cityNameMap[rawCity] || rawCity || inferCityByCoords(data.latitude, data.longitude) || defaultCity || "佛山";
+          writeCache(resolvedCity, data.latitude, data.longitude);
+          await fetchWeather(data.latitude, data.longitude, resolvedCity);
           return;
         }
-      } catch { continue; }
-    }
+      }
+    } catch { /* 定位失败，用默认城市 */ }
     const fallbackCity = defaultCity || "佛山";
     writeCache(fallbackCity, 23.1, 113.3);
     await fetchWeather(23.1, 113.3, fallbackCity);
